@@ -1,16 +1,21 @@
-// /pages/index.tsx
-import Layout from '../components/Layout';
+import Layout from '@/components/Layout';
 
-export default function HomePage() {
+export default function Home() {
   return (
     <Layout>
-      <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center px-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-green-500 mb-4">ATHENA</h1>
-        <h2 className="text-2xl md:text-3xl font-bold mb-2">Welcome to Athena</h2>
-        <p className="text-gray-300 max-w-xl text-center">
+      <section className="text-center mt-20">
+        <h1 className="text-4xl font-bold mb-4 text-green-400">Welcome to ATHENA</h1>
+        <p className="text-lg mb-6 text-gray-300">
           Explore competitions, manage athletes, and run strongman events with ease.
         </p>
-      </div>
+        <div className="mt-6">
+          <input
+            type="text"
+            placeholder="Search competitions..."
+            className="w-full max-w-md p-3 rounded bg-gray-800 text-white border border-gray-600"
+          />
+        </div>
+      </section>
     </Layout>
   );
 }
