@@ -1,6 +1,6 @@
 // pages/dashboard/index.tsx
 import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/components/DashboardSidebar';
 
 export default function DashboardPage() {
   return (
