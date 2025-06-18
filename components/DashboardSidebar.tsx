@@ -1,77 +1,84 @@
+// components/DashboardSidebar.tsx
 import { useRouter } from 'next/router';
-import { useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function DashboardSidebar() {
-  const [openSection, setOpenSection] = useState<string | null>(null);
   const router = useRouter();
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
-  const isActivePath = (href: string) => router.pathname === href;
+  const isActive = (path: string) => router.pathname === path;
 
-  const sectionClasses = (section: string) =>
-    `text-sm uppercase cursor-pointer mb-2 ${
-      openSection === section ? 'text-[#00FF00]' : 'text-white'
-    }`;
+  const menu = [
+    {
+      title: 'Athlete Menu',
+      key: 'athlete',
+      links: [
+        { label: 'Athlete Overview', href: '/dashboard/athlete/overview' },
+        { label: 'My Competitions', href: '/dashboard/athlete/my-competitions' },
+      ],
+    },
+    {
+      title: 'Competition Menu',
+      key: 'competition',
+      links: [
+        { label: 'Competition Settings', href: '/dashboard/competition/settings' },
+        { label: 'Overview', href: '/dashboard/competition/overview' },
+        { label: 'Athlete Roster', href: '/dashboard/competition/roster' },
+        { label: 'Communication', href: '/dashboard/competition/communication' },
+        { label: 'Financials', href: '/dashboard/competition/financials' },
+      ],
+    },
+    {
+      title: 'Sponsor Menu',
+      key: 'sponsor',
+      links: [
+        { label: 'Sponsorships', href: '/dashboard/sponsor/sponsorships' },
+      ],
+    },
+    {
+      title: 'Admin Menu',
+      key: 'admin',
+      links: [
+        { label: 'Manage Competitions', href: '/dashboard/admin/manage-competitions' },
+        { label: 'User Management', href: '/dashboard/admin/user-management' },
+        { label: 'System Logs', href: '/dashboard/admin/logs' },
+      ],
+    },
+  ];
 
-  const linkClasses = (href: string) =>
-    `block py-1 pl-4 border-l ${
-      isActivePath(href)
-        ? 'border-[#00FF00] text-[#00FF00]'
-        : 'border-[#444] text-white hover:text-[#00FF00]'
-    }`;
+  const currentSection = menu.find(m => m.key === openSection);
 
   return (
-    <aside className="bg-[#0a0a0a] text-white w-64 min-h-screen px-6 py-8">
-      {/* Athlete Menu */}
-      <h2 className={sectionClasses('athlete')} onClick={() => setOpenSection(openSection === 'athlete' ? null : 'athlete')}>
-        Athlete Menu
-      </h2>
-      <ul className="mb-4">
-        {openSection === 'athlete' && (
-          <>
-            <li><Link href="/dashboard" className={linkClasses('/dashboard')}>Profile</Link></li>
-            <li><Link href="/dashboard/bio" className={linkClasses('/dashboard/bio')}>Bio</Link></li>
-            <li><Link href="/dashboard/athlete-competitions" className={linkClasses('/dashboard/athlete-competitions')}>Athlete Competitions</Link></li>
-            <li><Link href="/dashboard/athlete-performance" className={linkClasses('/dashboard/athlete-performance')}>Athlete Performance</Link></li>
-          </>
-        )}
-      </ul>
+    <aside className="w-64 bg-black text-white p-4 border-r border-[#222] flex flex-col justify-between h-screen">
+      <div>
+        {menu.map(({ title, key }) => (
+          <button
+            key={key}
+            className={`w-full text-left px-2 py-2 ${openSection === key ? 'text-[#00FF00]' : 'text-white'}`}
+            onClick={() => setOpenSection(openSection === key ? null : key)}
+          >
+            {title}
+          </button>
+        ))}
+      </div>
 
-      {/* Competition Menu */}
-      <h2 className={sectionClasses('competition')} onClick={() => setOpenSection(openSection === 'competition' ? null : 'competition')}>
-        Competition Menu
-      </h2>
-      <ul className="mb-4">
-        {openSection === 'competition' && (
-          <>
-            <li><Link href="/dashboard/my-competitions" className={linkClasses('/dashboard/my-competitions')}>My Competitions</Link></li>
-            <li><Link href="/dashboard/new-competition" className={linkClasses('/dashboard/new-competition')}>New Competition</Link></li>
-          </>
-        )}
-      </ul>
-
-      {/* Sponsor Menu */}
-      <h2 className={sectionClasses('sponsor')} onClick={() => setOpenSection(openSection === 'sponsor' ? null : 'sponsor')}>
-        Sponsor Menu
-      </h2>
-      <ul className="mb-4">
-        {openSection === 'sponsor' && (
-          <li><Link href="/dashboard/sponsorships" className={linkClasses('/dashboard/sponsorships')}>Sponsorships</Link></li>
-        )}
-      </ul>
-
-      {/* Admin Menu */}
-      <h2 className={sectionClasses('admin')} onClick={() => setOpenSection(openSection === 'admin' ? null : 'admin')}>
-        Admin Menu
-      </h2>
-      <ul>
-        {openSection === 'admin' && (
-          <>
-            <li><Link href="/dashboard/manage-athletes" className={linkClasses('/dashboard/manage-athletes')}>Manage Athletes</Link></li>
-            <li><Link href="/dashboard/manage-competitions" className={linkClasses('/dashboard/manage-competitions')}>Manage Competitions</Link></li>
-          </>
-        )}
-      </ul>
+      {/* Submenu section */}
+      {currentSection && (
+        <div className="mt-4 border-t border-[#444] pt-4">
+          {currentSection.links.map(({ label, href }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`block px-3 py-1 text-sm border-l pl-2 ${
+                isActive(href) ? 'text-[#00FF00] border-[#00FF00]' : 'text-white border-[#333]'
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      )}
     </aside>
   );
 }
