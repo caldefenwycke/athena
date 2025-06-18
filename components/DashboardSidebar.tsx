@@ -60,37 +60,42 @@ export default function DashboardSidebar() {
     setExpanded(expanded === id ? '' : id);
   };
 
-  return (
-    <aside className="w-64 min-h-screen bg-black text-white pt-8 pl-6 pr-2">
-      {menuSections.map(section => (
-        <div key={section.id} className="mb-6">
-          <button
-            onClick={() => handleToggle(section.id)}
-            className={`text-left text-base mb-2 transition-colors duration-150 ${
-              expanded === section.id ? 'text-[#00FF00]' : 'text-white'
-            } hover:text-[#00FF00]`}
-          >
-            {section.title}
-          </button>
+  const selectedSection = menuSections.find(section => section.id === expanded);
 
-          {expanded === section.id && (
-            <ul className="pl-4 border-l border-gray-600">
-              {section.items.map(item => (
-                <li key={item.id}>
-                  <Link
-                    href={item.path}
-                    className={`block py-1 pl-2 pr-3 text-sm mt-1 transition-all duration-150 hover:text-[#00FF00] ${
-                      router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
+  return (
+    <aside className="w-64 min-h-screen bg-black text-white pt-8 pl-6 pr-2 flex flex-col justify-start">
+      <div>
+        {menuSections.map(section => (
+          <div key={section.id} className="mb-6">
+            <button
+              onClick={() => handleToggle(section.id)}
+              className={`text-left text-base transition-colors duration-150 ${
+                expanded === section.id ? 'text-[#00FF00]' : 'text-white'
+              } hover:text-[#00FF00]`}
+            >
+              {section.title}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Static sub-menu block below all section headers */}
+      {selectedSection && (
+        <ul className="mt-2 pl-4 border-l border-gray-600">
+          {selectedSection.items.map(item => (
+            <li key={item.id}>
+              <Link
+                href={item.path}
+                className={`block py-1 pl-2 pr-3 text-sm mt-1 transition-all duration-150 hover:text-[#00FF00] ${
+                  router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
+                }`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </aside>
   );
 }
