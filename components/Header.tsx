@@ -3,18 +3,19 @@ import Link from 'next/link';
 
 export default function Header() {
   return (
-    <header className="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
-      <h1 className="text-2xl font-extrabold">
-        <span className="text-black">ATH</span><span className="text-white">ENA</span>
-      </h1>
-      <nav className="flex items-center space-x-6 text-sm">
-        <Link href="/" className="hover:underline">Home</Link>
-        <Link href="/competitions" className="hover:underline">Competitions</Link>
-        <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-        <Link href="/support" className="hover:underline">Support</Link>
-        <span className="text-black bg-white px-3 py-1 rounded">c.j.page@icloud.com</span>
-        <button className="bg-black text-green-400 px-4 py-1 rounded hover:bg-gray-800">Sign Out</button>
-      </nav>
+    <header className="bg-black border-b border-[#1A1A1A] px-8 py-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <Link href="/" className="text-2xl font-bold text-white">
+          <span className="text-[#00FF00]">ATH</span>ENA
+        </Link>
+        <nav className="flex items-center gap-6">
+          <Link href="/" className="text-white hover:text-[#00FF00]">Home</Link>
+          <Link href="/competitions" className="text-white hover:text-[#00FF00]">Competitions</Link>
+          <Link href="/dashboard" className="text-white hover:text-[#00FF00]">Dashboard</Link>
+          <Link href="/support" className="text-white hover:text-[#00FF00]">Support</Link>
+          <Link href="/account/signin" className="px-4 py-1 bg-[#00FF00] text-black font-semibold rounded hover:bg-[#00DD00]">Sign In</Link>
+        </nav>
+      </div>
     </header>
   );
 }
