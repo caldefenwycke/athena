@@ -1,90 +1,96 @@
-// components/Sidebar.tsx
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import classNames from 'classnames';
 
-const menuSections = [
+interface MenuItem {
+  id: string;
+  label: string;
+  path: string;
+}
+
+interface MenuSection {
+  id: string;
+  title: string;
+  items: MenuItem[];
+}
+
+const menuSections: MenuSection[] = [
   {
     id: 'athlete',
-    label: 'Athlete Menu',
-    links: [
-      { href: '/dashboard/athlete/profile', label: 'Profile' },
-      { href: '/dashboard/athlete/bio', label: 'Bio' },
-      { href: '/dashboard/athlete/competitions', label: 'Athlete Competitions' },
-      { href: '/dashboard/athlete/performance', label: 'Athlete Performance' },
-    ],
+    title: 'Athlete Menu',
+    items: [
+      { id: 'profile', label: 'Profile', path: '/dashboard/profile' },
+      { id: 'bio', label: 'Bio', path: '/dashboard/bio' },
+      { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete-competitions' },
+      { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete-performance' }
+    ]
   },
   {
     id: 'competition',
-    label: 'Competition Menu',
-    links: [
-      { href: '/dashboard/competition/my-competitions', label: 'My Competitions' },
-      { href: '/dashboard/competition/new-competition', label: 'New Competition' },
-    ],
+    title: 'Competition Menu',
+    items: [
+      { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/my-competitions' },
+      { id: 'new-competition', label: 'New Competition', path: '/dashboard/new-competition' }
+    ]
   },
   {
     id: 'sponsor',
-    label: 'Sponsor Menu',
-    links: [
-      { href: '/dashboard/sponsor/manage-sponsors', label: 'Manage Sponsors' },
-      { href: '/dashboard/sponsor/sponsor-requests', label: 'Sponsor Requests' },
-    ],
+    title: 'Sponsor Menu',
+    items: [
+      { id: 'my-sponsors', label: 'My Sponsors', path: '/dashboard/my-sponsors' },
+      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/manage-sponsorships' }
+    ]
   },
   {
     id: 'admin',
-    label: 'Admin Menu',
-    links: [
-      { href: '/dashboard/admin/manage-competitions', label: 'Manage Competitions' },
-      { href: '/dashboard/admin/user-management', label: 'User Management' },
-      { href: '/dashboard/admin/system-logs', label: 'System Logs' },
-    ],
-  },
+    title: 'Admin Menu',
+    items: [
+      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/manage-competitions' },
+      { id: 'user-management', label: 'User Management', path: '/dashboard/user-management' },
+      { id: 'system-logs', label: 'System Logs', path: '/dashboard/system-logs' }
+    ]
+  }
 ];
 
-export default function Sidebar() {
+export default function DashboardSidebar() {
   const router = useRouter();
-  const [openSection, setOpenSection] = useState<string | null>('athlete');
+  const [expanded, setExpanded] = useState<string>('athlete');
 
-  const handleToggle = (sectionId: string) => {
-    setOpenSection(prev => (prev === sectionId ? null : sectionId));
+  const handleToggle = (id: string) => {
+    setExpanded(expanded === id ? '' : id);
   };
 
   return (
-    <aside className="w-64 bg-black text-white px-4 pt-8 flex flex-col">
+    <aside className="w-64 min-h-screen bg-black text-white pt-8 pl-6 pr-2">
       {menuSections.map(section => (
-        <div key={section.id} className="mb-2">
+        <div key={section.id} className="mb-6">
           <button
             onClick={() => handleToggle(section.id)}
-            className={classNames(
-              'text-left w-full px-2 py-2 transition-colors',
-              openSection === section.id ? 'text-[#00FF00]' : 'text-white'
-            )}
+            className={`text-left text-base mb-2 transition-colors duration-150 ${
+              expanded === section.id ? 'text-[#00FF00]' : 'text-white'
+            } hover:text-[#00FF00]`}
           >
-            {section.label}
+            {section.title}
           </button>
+
+          {expanded === section.id && (
+            <ul className="pl-4 border-l border-gray-600">
+              {section.items.map(item => (
+                <li key={item.id}>
+                  <Link
+                    href={item.path}
+                    className={`block py-1 pl-2 pr-3 text-sm mt-1 transition-all duration-150 hover:text-[#00FF00] ${
+                      router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       ))}
-
-      {/* Submenus below all menu headers */}
-      <div className="mt-4 border-t border-gray-800 pt-4 space-y-2">
-        {menuSections
-          .find(section => section.id === openSection)
-          ?.links.map(link => (
-            <Link href={link.href} key={link.href}>
-              <a
-                className={classNames(
-                  'block pl-4 border-l-2 text-sm py-1 transition-colors',
-                  router.pathname === link.href
-                    ? 'text-[#00FF00] border-[#00FF00]'
-                    : 'text-white border-transparent hover:border-gray-500 hover:text-gray-300'
-                )}
-              >
-                {link.label}
-              </a>
-            </Link>
-          ))}
-      </div>
     </aside>
   );
 }
