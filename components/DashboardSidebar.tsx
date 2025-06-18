@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from 'next/link'; 
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
@@ -69,7 +69,7 @@ export default function DashboardSidebar() {
           <div key={section.id} className="mb-6">
             <button
               onClick={() => handleToggle(section.id)}
-              className={`text-left text-base transition-colors duration-150 ${
+              className={`text-left text-[20px] transition-colors duration-150 ${
                 expanded === section.id ? 'text-[#00FF00]' : 'text-white'
               } hover:text-[#00FF00]`}
             >
@@ -86,7 +86,7 @@ export default function DashboardSidebar() {
             <li key={item.id}>
               <Link
                 href={item.path}
-                className={`block py-1 pl-2 pr-3 text-sm mt-1 transition-all duration-150 hover:text-[#00FF00] ${
+                className={`block py-1 pl-2 pr-3 text-[20px] mt-1 transition-all duration-150 hover:text-[#00FF00] ${
                   router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
                 }`}
               >
