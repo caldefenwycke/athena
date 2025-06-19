@@ -1,8 +1,9 @@
 // pages/register.tsx
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
 import { useRouter } from 'next/router';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -13,8 +14,17 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard'); // Auto-login on register
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Store user role in Firestore (default: user)
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        role: 'user',
+        createdAt: new Date()
+      });
+
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
     }
