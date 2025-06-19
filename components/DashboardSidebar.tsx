@@ -55,7 +55,7 @@ export default function DashboardSidebar() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  // Automatically expand the menu section based on current route
+  // Auto-expand menu based on current route
   useEffect(() => {
     const activeSection = menuSections.find(section =>
       section.items.some(item => router.pathname.startsWith(item.path))
@@ -67,37 +67,44 @@ export default function DashboardSidebar() {
     setExpanded(prev => (prev === id ? null : id));
   };
 
+  const selectedSection = menuSections.find(section => section.id === expanded);
+
   return (
     <aside className="w-64 min-h-screen bg-black text-white pt-8 pl-6 pr-2 flex flex-col justify-start">
-      {menuSections.map(section => (
-        <div key={section.id} className="mb-6">
-          <button
-            onClick={() => handleToggle(section.id)}
-            className={`text-left text-[20px] transition-colors duration-150 ${
-              expanded === section.id ? 'text-[#00FF00]' : 'text-white'
-            } hover:text-[#00FF00]`}
-          >
-            {section.title}
-          </button>
+      
+      {/* Render all main menu titles */}
+      <div className="mb-6">
+        {menuSections.map(section => (
+          <div key={section.id} className="mb-4">
+            <button
+              onClick={() => handleToggle(section.id)}
+              className={`text-left text-[20px] transition-colors duration-150 ${
+                expanded === section.id ? 'text-[#00FF00]' : 'text-white'
+              } hover:text-[#00FF00]`}
+            >
+              {section.title}
+            </button>
+          </div>
+        ))}
+      </div>
 
-          {expanded === section.id && (
-            <ul className="mt-2 pl-4 border-l border-gray-600">
-              {section.items.map(item => (
-                <li key={item.id}>
-                  <Link
-                    href={item.path}
-                    className={`block py-1 pl-2 pr-3 text-[20px] mt-1 transition-all duration-150 hover:text-[#00FF00] ${
-                      router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
+      {/* Render selected submenu below all titles */}
+      {selectedSection && (
+        <ul className="pl-4 border-l border-gray-600">
+          {selectedSection.items.map(item => (
+            <li key={item.id}>
+              <Link
+                href={item.path}
+                className={`block py-1 pl-2 pr-3 text-[20px] mt-1 transition-all duration-150 hover:text-[#00FF00] ${
+                  router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
+                }`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </aside>
   );
 }
