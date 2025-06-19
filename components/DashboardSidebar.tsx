@@ -1,6 +1,6 @@
-import Link from 'next/link'; 
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface MenuItem {
   id: string;
@@ -37,7 +37,8 @@ const menuSections: MenuSection[] = [
     id: 'sponsor',
     title: 'Sponsor Menu',
     items: [
-      { id: 'sponsorships', label: 'Sponsorships', path: '/dashboard/sponsor/sponsorships' }
+      { id: 'my-sponsors', label: 'My Sponsors', path: '/dashboard/sponsor/my-sponsors' },
+      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/sponsor/manage-sponsorships' }
     ]
   },
   {
@@ -45,7 +46,7 @@ const menuSections: MenuSection[] = [
     title: 'Admin Menu',
     items: [
       { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
-      { id: 'manage-athletes', label: 'Manage Athletes', path: '/dashboard/admin/manage-athletes' },
+      { id: 'user-management', label: 'User Management', path: '/dashboard/admin/user-management' },
       { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' }
     ]
   }
@@ -53,10 +54,25 @@ const menuSections: MenuSection[] = [
 
 export default function DashboardSidebar() {
   const router = useRouter();
-  const [expanded, setExpanded] = useState<string>('athlete');
+
+  const findCurrentSection = () => {
+    for (const section of menuSections) {
+      if (section.items.some(item => router.pathname.startsWith(item.path))) {
+        return section.id;
+      }
+    }
+    return '';
+  };
+
+  const [expanded, setExpanded] = useState<string>('');
+
+  useEffect(() => {
+    const current = findCurrentSection();
+    setExpanded(current);
+  }, [router.pathname]);
 
   const handleToggle = (id: string) => {
-    setExpanded(expanded === id ? '' : id);
+    setExpanded(prev => (prev === id ? '' : id));
   };
 
   const selectedSection = menuSections.find(section => section.id === expanded);
@@ -78,7 +94,6 @@ export default function DashboardSidebar() {
         ))}
       </div>
 
-      {/* Static sub-menu block below all section headers */}
       {selectedSection && (
         <ul className="mt-2 pl-4 border-l border-gray-600">
           {selectedSection.items.map(item => (
