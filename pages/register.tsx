@@ -1,27 +1,27 @@
-// pages/register.tsx
+'use client';
+
 import { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
 import { useRouter } from 'next/router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 
 export default function Register() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
   const [error, setError] = useState('');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const user = res.user;
 
-      // Store user role in Firestore (default: user)
+      // Save user role in Firestore
       await setDoc(doc(db, 'users', user.uid), {
+        role: 'athlete', // default role
         email: user.email,
-        role: 'user',
-        createdAt: new Date()
       });
 
       router.push('/dashboard');
@@ -31,29 +31,29 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-      <form onSubmit={handleRegister} className="bg-gray-800 p-8 rounded shadow-md w-96 space-y-4">
-        <h2 className="text-2xl font-bold text-center">Register</h2>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+    <div className="max-w-md mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Register</h1>
+      <form onSubmit={handleRegister} className="flex flex-col gap-4">
         <input
           type="email"
           placeholder="Email"
+          className="border p-2"
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full p-2 bg-gray-900 text-white rounded"
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
           type="password"
           placeholder="Password"
+          className="border p-2"
           value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full p-2 bg-gray-900 text-white rounded"
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-black font-bold py-2 rounded">
+        <button type="submit" className="bg-green-600 text-white py-2">
           Register
         </button>
+        {error && <p className="text-red-500">{error}</p>}
       </form>
     </div>
   );
