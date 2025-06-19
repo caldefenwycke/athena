@@ -19,35 +19,35 @@ const menuSections: MenuSection[] = [
     id: 'athlete',
     title: 'Athlete Menu',
     items: [
-      { id: 'profile', label: 'Profile', path: '/dashboard/profile' },
-      { id: 'bio', label: 'Bio', path: '/dashboard/bio' },
-      { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete-competitions' },
-      { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete-performance' }
+      { id: 'profile', label: 'Profile', path: '/dashboard/athlete/profile' },
+      { id: 'bio', label: 'Bio', path: '/dashboard/athlete/bio' },
+      { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete/athlete-competitions' },
+      { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete/athlete-performance' }
     ]
   },
   {
     id: 'competition',
     title: 'Competition Menu',
     items: [
-      { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/my-competitions' },
-      { id: 'new-competition', label: 'New Competition', path: '/dashboard/new-competition' }
+      { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
+      { id: 'new-competition', label: 'New Competition', path: '/dashboard/competition/new-competition' }
     ]
   },
   {
     id: 'sponsor',
     title: 'Sponsor Menu',
     items: [
-      { id: 'my-sponsors', label: 'My Sponsors', path: '/dashboard/my-sponsors' },
-      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/manage-sponsorships' }
+      { id: 'my-sponsors', label: 'My Sponsors', path: '/dashboard/sponsor/my-sponsors' },
+      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/sponsor/manage-sponsorships' }
     ]
   },
   {
     id: 'admin',
     title: 'Admin Menu',
     items: [
-      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/manage-competitions' },
-      { id: 'user-management', label: 'User Management', path: '/dashboard/user-management' },
-      { id: 'system-logs', label: 'System Logs', path: '/dashboard/system-logs' }
+      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
+      { id: 'user-management', label: 'User Management', path: '/dashboard/admin/user-management' },
+      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' }
     ]
   }
 ];
