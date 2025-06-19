@@ -15,41 +15,38 @@ interface MenuSection {
 }
 
 const menuSections: MenuSection[] = [
-  {
-    id: 'athlete',
-    title: 'Athlete Menu',
-    items: [
-      { id: 'profile', label: 'Profile', path: '/dashboard/athlete/profile' },
-      { id: 'bio', label: 'Bio', path: '/dashboard/athlete/bio' },
-      { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete/athlete-competitions' },
-      { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete/athlete-performance' }
-    ]
-  },
-  {
-    id: 'competition',
-    title: 'Competition Menu',
-    items: [
-      { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
-      { id: 'new-competition', label: 'New Competition', path: '/dashboard/competition/new-competition' }
-    ]
-  },
-  {
-    id: 'sponsor',
-    title: 'Sponsor Menu',
-    items: [
-      { id: 'my-sponsors', label: 'My Sponsors', path: '/dashboard/sponsor/my-sponsors' },
-      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/sponsor/manage-sponsorships' }
-    ]
-  },
-  {
-    id: 'admin',
-    title: 'Admin Menu',
-    items: [
-      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
-      { id: 'user-management', label: 'User Management', path: '/dashboard/admin/user-management' },
-      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' }
-    ]
-  }
+{
+  id: 'sponsor',
+  title: 'Sponsor Menu',
+  items: [
+    {
+      id: 'sponsorships',
+      label: 'Sponsorships',
+      path: '/dashboard/sponsor/sponsorships', // ✅ match file path
+    },
+  ],
+},
+{
+  id: 'admin',
+  title: 'Admin Menu',
+  items: [
+    {
+      id: 'manage-competitions',
+      label: 'Manage Competitions',
+      path: '/dashboard/admin/manage-competitions',
+    },
+    {
+      id: 'manage-users', // ✅ updated ID
+      label: 'Manage Users', // ✅ fixed label
+      path: '/dashboard/admin/manage-users', // ✅ update path to match new file
+    },
+    {
+      id: 'system-logs',
+      label: 'System Logs',
+      path: '/dashboard/admin/system-logs',
+    },
+  ],
+}
 ];
 
 export default function DashboardSidebar() {
