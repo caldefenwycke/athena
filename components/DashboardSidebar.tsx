@@ -37,8 +37,7 @@ const menuSections: MenuSection[] = [
     id: 'sponsor',
     title: 'Sponsor Menu',
     items: [
-      { id: 'my-sponsors', label: 'My Sponsors', path: '/dashboard/sponsor/my-sponsors' },
-      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/sponsor/manage-sponsorships' }
+      { id: 'sponsorships', label: 'Sponsorships', path: '/dashboard/sponsor/sponsorships' }
     ]
   },
   {
@@ -46,7 +45,7 @@ const menuSections: MenuSection[] = [
     title: 'Admin Menu',
     items: [
       { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
-      { id: 'user-management', label: 'User Management', path: '/dashboard/admin/user-management' },
+      { id: 'manage-athletes', label: 'Manage Athletes', path: '/dashboard/admin/manage-athletes' },
       { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' }
     ]
   }

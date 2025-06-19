@@ -1,18 +1,13 @@
 // pages/dashboard/index.tsx
-import Header from '@/components/Header';
-import Sidebar from '@/components/DashboardSidebar';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
-export default function DashboardPage() {
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-8">
-          <h1 className="text-4xl font-bold mb-4">DASHBOARD</h1>
-          <p className="text-gray-400">Loading...</p>
-        </main>
-      </div>
-    </div>
-  );
+export default function DashboardRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/dashboard/athlete/profile');
+  }, [router]);
+
+  return null; // You can also show a loading spinner here if desired
 }
