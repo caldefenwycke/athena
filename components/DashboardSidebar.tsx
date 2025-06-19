@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface MenuItem {
   id: string;
@@ -37,8 +37,7 @@ const menuSections: MenuSection[] = [
     id: 'sponsor',
     title: 'Sponsor Menu',
     items: [
-      { id: 'my-sponsorships', label: 'My Sponsorships', path: '/dashboard/sponsor/my-sponsorships' },
-      { id: 'manage-sponsorships', label: 'Manage Sponsorships', path: '/dashboard/sponsor/manage-sponsorships' },
+      { id: 'sponsorships', label: 'Sponsorships', path: '/dashboard/sponsor/sponsorships' },
     ],
   },
   {
@@ -55,6 +54,14 @@ const menuSections: MenuSection[] = [
 export default function DashboardSidebar() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  // Automatically expand the menu section based on current route
+  useEffect(() => {
+    const activeSection = menuSections.find(section =>
+      section.items.some(item => router.pathname.startsWith(item.path))
+    );
+    if (activeSection) setExpanded(activeSection.id);
+  }, [router.pathname]);
 
   const handleToggle = (id: string) => {
     setExpanded(prev => (prev === id ? null : id));
@@ -73,7 +80,6 @@ export default function DashboardSidebar() {
             {section.title}
           </button>
 
-          {/* Only show items if expanded */}
           {expanded === section.id && (
             <ul className="mt-2 pl-4 border-l border-gray-600">
               {section.items.map(item => (
