@@ -1,15 +1,10 @@
-import Head from 'next/head';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-export default function AthletePerformance() {
+export default function AthletePerformancePage() {
   return (
-    <>
-      <Head>
-        <title>Athlete Performance | ATHENA</title>
-      </Head>
-      <div className="min-h-screen bg-black text-white p-8">
-        <h1 className="text-3xl font-bold text-[#00FF00] mb-4">Athlete Performance</h1>
-        <p>This is the placeholder for the Athlete Performance.</p>
-      </div>
-    </>
+    <DashboardLayout>
+      <h1 className="text-2xl font-bold mb-2">Athlete Performance</h1>
+      <p>This is the athlete performance page.</p>
+    </DashboardLayout>
   );
 }

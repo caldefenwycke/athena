@@ -1,15 +1,10 @@
-import Head from 'next/head';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-export default function ManageCompetitions() {
+export default function ManageCompetitionsPage() {
   return (
-    <>
-      <Head>
-        <title>Manage Competitions | ATHENA</title>
-      </Head>
-      <div className="min-h-screen bg-black text-white p-8">
-        <h1 className="text-3xl font-bold text-[#00FF00] mb-4">Manage Competitions</h1>
-        <p>This is the placeholder for the Manage Competitions.</p>
-      </div>
-    </>
+    <DashboardLayout>
+      <h1 className="text-2xl font-bold mb-2">Manage Competitions</h1>
+      <p>This is the manage competitions page.</p>
+    </DashboardLayout>
   );
 }
