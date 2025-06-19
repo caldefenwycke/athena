@@ -55,7 +55,7 @@ export default function DashboardSidebar() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  // Auto-expand menu based on current route
+  // Auto-expand based on current route
   useEffect(() => {
     const activeSection = menuSections.find(section =>
       section.items.some(item => router.pathname.startsWith(item.path))
@@ -63,8 +63,18 @@ export default function DashboardSidebar() {
     if (activeSection) setExpanded(activeSection.id);
   }, [router.pathname]);
 
+  // Toggle menu and navigate to first subpage
   const handleToggle = (id: string) => {
-    setExpanded(prev => (prev === id ? null : id));
+    const section = menuSections.find(s => s.id === id);
+    if (!section) return;
+
+    setExpanded(prev => {
+      const isSame = prev === id;
+      if (!isSame && section.items.length > 0) {
+        router.push(section.items[0].path);
+      }
+      return isSame ? null : id;
+    });
   };
 
   const selectedSection = menuSections.find(section => section.id === expanded);
@@ -72,7 +82,7 @@ export default function DashboardSidebar() {
   return (
     <aside className="w-64 min-h-screen bg-black text-white pt-8 pl-6 pr-2 flex flex-col justify-start">
       
-      {/* Render all main menu titles */}
+      {/* Main menu buttons */}
       <div className="mb-6">
         {menuSections.map(section => (
           <div key={section.id} className="mb-4">
@@ -88,7 +98,7 @@ export default function DashboardSidebar() {
         ))}
       </div>
 
-      {/* Render selected submenu below all titles */}
+      {/* Shared sub-menu panel */}
       {selectedSection && (
         <ul className="pl-4 border-l border-gray-600">
           {selectedSection.items.map(item => (
