@@ -1,18 +1,23 @@
+// components/layouts/DashboardLayout.tsx
+import { ReactNode } from 'react';
 import Header from '../Header';
-import DashboardSidebar from '../DashboardSidebar';
+import DashboardSidebar from '../dashboard/DashboardSidebar';
+import ProtectedRoute from '../ProtectedRoute';
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header />
+    <ProtectedRoute>
       <div className="flex">
         <DashboardSidebar />
-        <main className="flex-1 p-6">{children}</main>
+        <div className="flex-1">
+          <Header />
+          <main className="p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
