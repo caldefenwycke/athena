@@ -1,106 +1,65 @@
+// pages/dashboard/competition/new-competition.tsx
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-export default function NewCompetitionPage() {
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-  });
+export default function NewCompetition() {
+  const router = useRouter();
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState('');
+  const [date, setDate] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleCreate = async () => {
+    // Simulate ID creation (replace with Firestore logic if needed)
+    const newCompetitionId = `${Date.now()}`;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Replace with Firestore create logic
-    console.log('Creating competition →', form);
+    // Save logic would go here
+
+    // Redirect to the settings page for the new competition
+    router.push(`/dashboard/competition/${newCompetitionId}/settings`);
   };
 
   return (
     <DashboardLayout>
-      <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-white mb-6">Create New Competition</h2>
+      <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-white mb-6">Create New Competition</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
+        <div className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-[#00FF00] font-medium mb-1">
-              Title
-            </label>
+            <label className="block text-sm text-gray-400 mb-1">Competition Name</label>
             <input
-              id="title"
-              name="title"
-              type="text"
-              value={form.title}
-              onChange={handleChange}
-              placeholder="Enter competition title"
-              className="w-full bg-[#222] border border-[#333] rounded px-4 py-2 text-white focus:outline-none focus:border-[#00FF00]"
-              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
             />
           </div>
 
-          {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-[#00FF00] font-medium mb-1">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Enter competition description"
-              rows={4}
-              className="w-full bg-[#222] border border-[#333] rounded px-4 py-2 text-white focus:outline-none focus:border-[#00FF00]"
-              required
+            <label className="block text-sm text-gray-400 mb-1">Location</label>
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
             />
           </div>
 
-          {/* Dates */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="startDate" className="block text-[#00FF00] font-medium mb-1">
-                Start Date
-              </label>
-              <input
-                id="startDate"
-                name="startDate"
-                type="date"
-                value={form.startDate}
-                onChange={handleChange}
-                className="w-full bg-[#222] border border-[#333] rounded px-4 py-2 text-white focus:outline-none focus:border-[#00FF00]"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="endDate" className="block text-[#00FF00] font-medium mb-1">
-                End Date
-              </label>
-              <input
-                id="endDate"
-                name="endDate"
-                type="date"
-                value={form.endDate}
-                onChange={handleChange}
-                className="w-full bg-[#222] border border-[#333] rounded px-4 py-2 text-white focus:outline-none focus:border-[#00FF00]"
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
+            />
           </div>
 
-          {/* Submit */}
-          <div className="pt-2">
-            <button
-              type="submit"
-              className="bg-[#00FF00] hover:bg-[#00dd00] text-black font-bold px-6 py-2 rounded"
-            >
-              Create Competition
-            </button>
-          </div>
-        </form>
+          <button
+            onClick={handleCreate}
+            className="bg-[#00FF00] text-black px-4 py-2 rounded font-semibold hover:bg-[#00cc00] mt-4"
+          >
+            Save & Go to Settings
+          </button>
+        </div>
       </div>
     </DashboardLayout>
   );

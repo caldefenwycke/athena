@@ -36,8 +36,7 @@ const competitionsData: Competition[] = [
 
 export default function MyCompetitionsPage() {
   const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
-
-  const filtered = competitionsData.filter(c => c.status === activeTab);
+  const filtered = competitionsData.filter((c) => c.status === activeTab);
 
   return (
     <DashboardLayout>
@@ -88,9 +87,18 @@ export default function MyCompetitionsPage() {
           ) : (
             filtered.map((comp) => (
               <div key={comp.id} className="bg-[#222] rounded p-4 border border-[#333]">
-                <h4 className="text-[#00FF00] font-semibold text-lg mb-1">{comp.title}</h4>
-                <p className="text-white text-sm mb-2">{comp.description}</p>
-                <p className="text-sm text-gray-400">📅 {comp.date}</p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="text-[#00FF00] font-semibold text-lg mb-1">{comp.title}</h4>
+                    <p className="text-white text-sm mb-2">{comp.description}</p>
+                    <p className="text-sm text-gray-400">📅 {comp.date}</p>
+                  </div>
+                  <Link href={`/dashboard/competition/${comp.id}/settings`}>
+                    <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
+                      Edit
+                    </button>
+                  </Link>
+                </div>
               </div>
             ))
           )}
