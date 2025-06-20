@@ -1,10 +1,87 @@
+import { useState } from 'react';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 
+interface Competition {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  status: 'active' | 'past';
+}
+
+const competitionsData: Competition[] = [
+  {
+    id: '1',
+    title: 'Herm Strongest 2026',
+    description: 'Strongman competition in Herm',
+    date: '01/07/2025',
+    status: 'active',
+  },
+  {
+    id: '2',
+    title: 'Summer Strength Festival',
+    description: 'The biggest strength event of the summer',
+    date: '12/07/2025',
+    status: 'active',
+  },
+  {
+    id: '3',
+    title: 'Winter Classic 2024',
+    description: 'Cold weather showdown for elite athletes',
+    date: '15/12/2024',
+    status: 'past',
+  },
+];
+
 export default function MyCompetitionsPage() {
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
+
+  const filtered = competitionsData.filter(c => c.status === activeTab);
+
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-2">My Competitions</h1>
-      <p>This is the my competitions page.</p>
+      <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`px-4 py-2 rounded font-semibold ${
+              activeTab === 'active'
+                ? 'bg-[#00FF00] text-black'
+                : 'bg-[#222] text-white hover:bg-[#333]'
+            }`}
+          >
+            Active Competitions
+          </button>
+          <button
+            onClick={() => setActiveTab('past')}
+            className={`px-4 py-2 rounded font-semibold ${
+              activeTab === 'past'
+                ? 'bg-[#00FF00] text-black'
+                : 'bg-[#222] text-white hover:bg-[#333]'
+            }`}
+          >
+            Past Competitions
+          </button>
+        </div>
+
+        <h3 className="text-xl font-bold text-white mb-4">
+          {activeTab === 'active' ? 'Active Competitions' : 'Past Competitions'}
+        </h3>
+
+        <div className="flex flex-col gap-4">
+          {filtered.length === 0 ? (
+            <p className="text-gray-400">No competitions to display.</p>
+          ) : (
+            filtered.map((comp) => (
+              <div key={comp.id} className="bg-[#222] rounded p-4 border border-[#333]">
+                <h4 className="text-[#00FF00] font-semibold text-lg mb-1">{comp.title}</h4>
+                <p className="text-white text-sm mb-2">{comp.description}</p>
+                <p className="text-sm text-gray-400">📅 {comp.date}</p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

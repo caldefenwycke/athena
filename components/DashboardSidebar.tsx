@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 
 interface MenuItem {
   id: string;
@@ -34,87 +33,64 @@ const menuSections: MenuSection[] = [
     ],
   },
   {
-    id: 'sponsor',
-    title: 'Sponsor Menu',
-    items: [
-      { id: 'sponsorships', label: 'Sponsorships', path: '/dashboard/sponsor/sponsorships' },
-    ],
-  },
-  {
     id: 'admin',
     title: 'Admin Menu',
     items: [
-      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
       { id: 'manage-users', label: 'Manage Users', path: '/dashboard/admin/manage-users' },
-      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' },
+      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
     ],
   },
 ];
 
 export default function DashboardSidebar() {
   const router = useRouter();
-  const [expanded, setExpanded] = useState<string | null>(null);
 
-  // Auto-expand based on current route
-  useEffect(() => {
-    const activeSection = menuSections.find(section =>
-      section.items.some(item => router.pathname.startsWith(item.path))
-    );
-    if (activeSection) setExpanded(activeSection.id);
-  }, [router.pathname]);
-
-  // Toggle menu and navigate to first subpage
-  const handleToggle = (id: string) => {
-    const section = menuSections.find(s => s.id === id);
-    if (!section) return;
-
-    setExpanded(prev => {
-      const isSame = prev === id;
-      if (!isSame && section.items.length > 0) {
-        router.push(section.items[0].path);
-      }
-      return isSame ? null : id;
-    });
-  };
-
-  const selectedSection = menuSections.find(section => section.id === expanded);
+  const activeSection = menuSections.find(section =>
+    section.items.some(item => router.pathname === item.path)
+  );
 
   return (
-    <aside className="w-64 min-h-screen bg-black text-white pt-8 pl-6 pr-2 flex flex-col justify-start">
-      
-      {/* Main menu buttons */}
-      <div className="mb-6">
-        {menuSections.map(section => (
-          <div key={section.id} className="mb-4">
-            <button
-              onClick={() => handleToggle(section.id)}
-              className={`text-left text-[20px] transition-colors duration-150 ${
-                expanded === section.id ? 'text-[#00FF00]' : 'text-white'
-              } hover:text-[#00FF00]`}
-            >
-              {section.title}
-            </button>
-          </div>
-        ))}
-      </div>
+    <div className="flex flex-col gap-4">
+      {/* Parent headers as links */}
+      {menuSections.map((section) => {
+        const isActive = section === activeSection;
+        const firstChildPath = section.items[0]?.path || '#';
 
-      {/* Shared sub-menu panel */}
-      {selectedSection && (
-        <ul className="pl-4 border-l border-gray-600">
-          {selectedSection.items.map(item => (
-            <li key={item.id}>
-              <Link
-                href={item.path}
-                className={`block py-1 pl-2 pr-3 text-[20px] mt-1 transition-all duration-150 hover:text-[#00FF00] ${
-                  router.pathname === item.path ? 'text-[#00FF00]' : 'text-white'
-                }`}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+        return (
+          <Link
+            key={section.id}
+            href={firstChildPath}
+            className={`rounded-md px-3 py-2 font-semibold text-sm uppercase tracking-wide block transition ${
+              isActive ? 'bg-[#00FF00] text-black' : 'text-[#00FF00] hover:text-[#00FF00]'
+            }`}
+          >
+            {section.title}
+          </Link>
+        );
+      })}
+
+      {/* Active section's children shown beneath all parents */}
+      {activeSection && (
+        <ul className="flex flex-col gap-1 pt-2 pl-4 border-t border-[#333] mt-2">
+          {activeSection.items.map((item) => {
+            const isActiveItem = router.pathname === item.path;
+            return (
+              <li key={item.id}>
+                <Link
+                  href={item.path}
+                  className={`block px-2 py-1 rounded transition-colors ${
+                    isActiveItem
+                      ? 'text-[#00FF00] font-semibold'
+                      : 'text-white hover:text-[#00FF00]'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
-    </aside>
+    </div>
   );
 }

@@ -52,8 +52,6 @@ export default function HomePage() {
         <title>ATHENA – Strongman Admin System</title>
       </Head>
       <div className="min-h-screen bg-black text-white">
-        <Header />
-
         <main className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold mb-2">

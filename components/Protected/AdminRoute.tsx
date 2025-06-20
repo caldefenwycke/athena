@@ -1,31 +1,31 @@
-// components/Protected/AdminRoute.tsx
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../context/AuthContext';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+
+const BYPASS_ADMIN_AUTH = true; // 🔧 Set to false to enforce real admin-only access
 
 export default function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, role, loading } = useAuth();
   const router = useRouter();
-  const [clientReady, setClientReady] = useState(false);
 
-  useEffect(() => {
-    // Prevent hydration mismatch
-    setClientReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!loading && clientReady) {
-      if (!user) {
-        router.push('/login');
-      } else if (role !== 'admin') {
-        router.push('/unauthorized'); // Optional: Create an unauthorized page
-      }
-    }
-  }, [user, role, loading, clientReady, router]);
-
-  if (loading || !clientReady || !user || role !== 'admin') {
-    return <p className="p-8 text-white">Checking access...</p>;
+  // ✅ Temporary bypass for development
+  if (BYPASS_ADMIN_AUTH) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  useEffect(() => {
+    if (!loading && (!user || role !== 'admin')) {
+      router.push('/login');
+    }
+  }, [user, role, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white text-lg">
+        Loading...
+      </div>
+    );
+  }
+
+  return <>{user && role === 'admin' ? children : null}</>;
 }

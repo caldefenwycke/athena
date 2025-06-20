@@ -1,10 +1,9 @@
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-export default function AthletePerformancePage() {
+export default function AthletePerformance() {
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-2">Athlete Performance</h1>
-      <p>This is the athlete performance page.</p>
+      <p>Overview of your competition performance and stats.</p>
     </DashboardLayout>
   );
 }

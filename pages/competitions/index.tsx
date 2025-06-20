@@ -1,6 +1,5 @@
 // pages/competitions.tsx
 import Head from 'next/head';
-import Header from '@/components/Header';
 import { useState } from 'react';
 
 interface Competition {
@@ -56,7 +55,6 @@ export default function CompetitionsPage() {
         <title>Available Competitions – ATHENA</title>
       </Head>
       <div className="bg-black text-white min-h-screen">
-        <Header />
         <main className="max-w-7xl mx-auto px-4 py-10">
           <h1 className="text-4xl font-bold mb-8 text-white tracking-wide">AVAILABLE COMPETITIONS</h1>
 

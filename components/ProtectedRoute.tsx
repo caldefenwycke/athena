@@ -1,28 +1,31 @@
-// components/ProtectedRoute.tsx
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requireAdmin?: boolean;
-}
+const BYPASS_AUTH = true; // 🔧 Set to false to enforce real auth
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, role, loading } = useAuth();
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
   const router = useRouter();
 
+  // ✅ Temporary bypass for development purposes
+  if (BYPASS_AUTH) {
+    return <>{children}</>;
+  }
+
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/login');
-      } else if (requireAdmin && role !== 'admin') {
-        router.push('/unauthorized');
-      }
+    if (!loading && !user) {
+      router.push('/login');
     }
-  }, [user, role, loading, router, requireAdmin]);
+  }, [user, loading, router]);
 
-  if (loading || !user || (requireAdmin && role !== 'admin')) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white text-lg">
+        Loading...
+      </div>
+    );
+  }
 
-  return <>{children}</>;
+  return <>{user ? children : null}</>;
 }
