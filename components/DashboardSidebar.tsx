@@ -38,6 +38,7 @@ const menuSections: MenuSection[] = [
     items: [
       { id: 'manage-users', label: 'Manage Users', path: '/dashboard/admin/manage-users' },
       { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
+      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' }, // Added line
     ],
   },
 ];

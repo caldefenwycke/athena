@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import Link from 'next/link';
 
 interface Competition {
   id: string;
@@ -41,6 +42,17 @@ export default function MyCompetitionsPage() {
   return (
     <DashboardLayout>
       <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
+        {/* Title and Create Button */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">My Competitions</h2>
+          <Link href="/dashboard/competition/new-competition">
+            <button className="bg-[#00FF00] text-black font-semibold px-4 py-2 rounded hover:bg-[#00e600]">
+              + Create New
+            </button>
+          </Link>
+        </div>
+
+        {/* Tabs */}
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setActiveTab('active')}
@@ -64,10 +76,12 @@ export default function MyCompetitionsPage() {
           </button>
         </div>
 
+        {/* Subheading */}
         <h3 className="text-xl font-bold text-white mb-4">
           {activeTab === 'active' ? 'Active Competitions' : 'Past Competitions'}
         </h3>
 
+        {/* Competition Cards */}
         <div className="flex flex-col gap-4">
           {filtered.length === 0 ? (
             <p className="text-gray-400">No competitions to display.</p>

@@ -19,7 +19,6 @@ export default function ManageUsers() {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setUsers(data);
     };
-
     fetchUsers();
   }, []);
 
@@ -33,7 +32,6 @@ export default function ManageUsers() {
     if (selectedUser) {
       const userRef = doc(db, 'users', selectedUser.id);
       await updateDoc(userRef, { role: newRole });
-
       setUsers((prev) =>
         prev.map((u) => (u.id === selectedUser.id ? { ...u, role: newRole } : u))
       );
@@ -47,59 +45,68 @@ export default function ManageUsers() {
 
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-4">Manage Users</h1>
-      <input
-        type="text"
-        placeholder="Search by email..."
-        className="w-full p-2 border mb-4"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <ul className="space-y-4">
-        {filteredUsers.map((user) => (
-          <li key={user.id} className="border p-4 flex justify-between items-center">
-            <div>
-              <p className="font-semibold">{user.email}</p>
-              <p className="text-sm text-gray-500">Role: {user.role}</p>
-            </div>
-            <button
-              onClick={() => openModal(user)}
-              className="text-blue-500 underline"
-            >
-              Edit
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-white">Manage Users</h1>
+        </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <h2 className="text-xl font-bold mb-4">Edit User</h2>
-        {selectedUser && (
-          <div className="space-y-4">
-            <p>
-              <strong>Email:</strong> {selectedUser.email}
-            </p>
-            <label className="block">
-              <span className="text-sm text-gray-700">Role</span>
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="w-full p-2 border mt-1"
-              >
-                <option value="athlete">Athlete</option>
-                <option value="organiser">Organiser</option>
-                <option value="admin">Admin</option>
-              </select>
-            </label>
-            <button
-              onClick={saveChanges}
-              className="bg-green-600 text-white px-4 py-2 rounded"
+        <input
+          type="text"
+          placeholder="Search by email..."
+          className="w-full p-2 mb-6 rounded bg-[#222] text-white border border-[#333]"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <div className="space-y-4">
+          {filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="bg-[#1A1A1A] p-4 rounded flex justify-between items-center"
             >
-              Save Changes
-            </button>
-          </div>
-        )}
-      </Modal>
+              <div>
+                <p className="font-semibold text-white">{user.email}</p>
+                <p className="text-sm text-gray-400">Role: {user.role}</p>
+              </div>
+              <button
+                onClick={() => openModal(user)}
+                className="text-[#00FF00] font-medium hover:underline"
+              >
+                Edit
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
+          <h2 className="text-xl font-bold mb-4">Edit User</h2>
+          {selectedUser && (
+            <div className="space-y-4">
+              <p>
+                <strong>Email:</strong> {selectedUser.email}
+              </p>
+              <label className="block">
+                <span className="text-sm text-gray-700">Role</span>
+                <select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  className="w-full p-2 border mt-1"
+                >
+                  <option value="athlete">Athlete</option>
+                  <option value="organiser">Organiser</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
+              <button
+                onClick={saveChanges}
+                className="bg-[#00FF00] text-black px-4 py-2 rounded font-bold"
+              >
+                Save Changes
+              </button>
+            </div>
+          )}
+        </Modal>
+      </div>
     </DashboardLayout>
   );
 }

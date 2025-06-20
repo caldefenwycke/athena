@@ -45,6 +45,11 @@ export default function AthletePerformancePage() {
   return (
     <DashboardLayout>
       <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
+        {/* PAGE TITLE */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-white">Athlete Performance</h1>
+        </div>
+
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setActiveTab('personal')}

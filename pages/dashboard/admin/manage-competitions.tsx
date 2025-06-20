@@ -1,119 +1,67 @@
-'use client';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
-import DashboardLayout from '../../../components/layouts/DashboardLayout';
-import Modal from '../../../components/ui/Modal';
+const mockCompetitions = [
+  {
+    id: '1',
+    name: 'Herm Strongest 2025',
+    location: 'Herm Island',
+    date: '2025-08-15',
+    status: 'Active',
+  },
+  {
+    id: '2',
+    name: 'Guernsey Gauntlet',
+    location: 'Guernsey',
+    date: '2025-09-10',
+    status: 'Pending',
+  },
+  {
+    id: '3',
+    name: 'Sark Showdown',
+    location: 'Sark',
+    date: '2025-10-01',
+    status: 'Suspended',
+  },
+];
 
 export default function ManageCompetitions() {
-  const [competitions, setCompetitions] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
-  const [selectedComp, setSelectedComp] = useState<any | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editData, setEditData] = useState({ name: '', organiser: '' });
-
-  useEffect(() => {
-    const fetchCompetitions = async () => {
-      const snapshot = await getDocs(collection(db, 'competitions'));
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setCompetitions(data);
-    };
-
-    fetchCompetitions();
-  }, []);
-
-  const openModal = (comp: any) => {
-    setSelectedComp(comp);
-    setEditData({ name: comp.name || '', organiser: comp.organiser || '' });
-    setModalOpen(true);
-  };
-
-  const saveChanges = async () => {
-    if (selectedComp) {
-      const compRef = doc(db, 'competitions', selectedComp.id);
-      await updateDoc(compRef, {
-        name: editData.name,
-        organiser: editData.organiser,
-      });
-
-      setCompetitions((prev) =>
-        prev.map((c) =>
-          c.id === selectedComp.id ? { ...c, ...editData } : c
-        )
-      );
-      setModalOpen(false);
-    }
-  };
-
-  const filteredComps = competitions.filter((comp) =>
-    comp.name?.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-4">Manage Competitions</h1>
-      <input
-        type="text"
-        placeholder="Search by name..."
-        className="w-full p-2 border mb-4"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <ul className="space-y-4">
-        {filteredComps.map((comp) => (
-          <li key={comp.id} className="border p-4 flex justify-between items-center">
-            <div>
-              <p className="font-semibold">{comp.name}</p>
-              <p className="text-sm text-gray-500">
-                Organiser: {comp.organiser || 'N/A'}
-              </p>
-            </div>
-            <button
-              onClick={() => openModal(comp)}
-              className="text-blue-500 underline"
-            >
-              Manage
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-white">Manage Competitions</h1>
+          <button className="bg-[#00FF00] text-black px-4 py-2 rounded font-semibold hover:bg-[#00cc00]">
+            Create New
+          </button>
+        </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <h2 className="text-xl font-bold mb-4">Edit Competition</h2>
-        {selectedComp && (
-          <div className="space-y-4">
-            <label className="block">
-              <span className="text-sm text-gray-700">Competition Name</span>
-              <input
-                type="text"
-                value={editData.name}
-                onChange={(e) =>
-                  setEditData({ ...editData, name: e.target.value })
-                }
-                className="w-full p-2 border mt-1"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm text-gray-700">Organiser</span>
-              <input
-                type="text"
-                value={editData.organiser}
-                onChange={(e) =>
-                  setEditData({ ...editData, organiser: e.target.value })
-                }
-                className="w-full p-2 border mt-1"
-              />
-            </label>
-            <button
-              onClick={saveChanges}
-              className="bg-green-600 text-white px-4 py-2 rounded"
-            >
-              Save Changes
-            </button>
-          </div>
-        )}
-      </Modal>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="text-[#00FF00] border-b border-[#333]">
+                <th className="py-2">Name</th>
+                <th className="py-2">Location</th>
+                <th className="py-2">Date</th>
+                <th className="py-2">Status</th>
+                <th className="py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {mockCompetitions.map((comp) => (
+                <tr key={comp.id} className="border-t border-[#333] hover:bg-[#1c1c1c]">
+                  <td className="py-2">{comp.name}</td>
+                  <td className="py-2">{comp.location}</td>
+                  <td className="py-2">{comp.date}</td>
+                  <td className="py-2">{comp.status}</td>
+                  <td className="py-2">
+                    <button className="text-[#00FF00] hover:underline">View</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }
