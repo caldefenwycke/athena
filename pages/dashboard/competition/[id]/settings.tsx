@@ -35,24 +35,25 @@ export default function CompetitionSettings() {
     image: '',
     rules: '',
     waivers: '',
+    registrationCloseDate: '',
+    maxAthletes: 0,
+    requireTshirtSize: false,
+    requireWeightHeight: false,
   });
 
   useEffect(() => {
     if (id) {
-      // TODO: Fetch competition details from Firestore
       console.log('Loaded competition ID:', id);
     }
   }, [id]);
 
   const handleSave = () => {
-    // TODO: Save competition details to Firestore
     console.log('Saving competition:', id, competition);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Placeholder logic - Replace with actual upload handling (e.g. Firebase Storage)
       const imageUrl = URL.createObjectURL(file);
       setCompetition({ ...competition, image: imageUrl });
     }
@@ -201,7 +202,48 @@ export default function CompetitionSettings() {
             </>
           )}
 
-          {activeTab === 'Athlete' && <p>Coming soon: Athlete registration settings</p>}
+          {activeTab === 'Athlete' && (
+            <>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Registration Close Date</label>
+                <input
+                  type="date"
+                  value={competition.registrationCloseDate}
+                  onChange={(e) => setCompetition({ ...competition, registrationCloseDate: e.target.value })}
+                  className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Max Athletes Allowed</label>
+                <input
+                  type="number"
+                  value={competition.maxAthletes}
+                  onChange={(e) => setCompetition({ ...competition, maxAthletes: parseInt(e.target.value) || 0 })}
+                  className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={competition.requireTshirtSize}
+                  onChange={(e) => setCompetition({ ...competition, requireTshirtSize: e.target.checked })}
+                />
+                <label className="text-sm text-gray-400">Require T-Shirt Size</label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={competition.requireWeightHeight}
+                  onChange={(e) => setCompetition({ ...competition, requireWeightHeight: e.target.checked })}
+                />
+                <label className="text-sm text-gray-400">Require Weight & Height</label>
+              </div>
+            </>
+          )}
+
           {activeTab === 'Event' && <p>Coming soon: Event setup</p>}
           {activeTab === 'Rules' && <p>Coming soon: Rules and sanctioning</p>}
           {activeTab === 'Financial' && <p>Coming soon: Financial settings</p>}
