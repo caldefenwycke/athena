@@ -32,6 +32,7 @@ export default function CompetitionSettings() {
     organiserName: '',
     organiserEmail: '',
     organiserPhone: '',
+    image: '',
     rules: '',
     waivers: '',
   });
@@ -46,6 +47,15 @@ export default function CompetitionSettings() {
   const handleSave = () => {
     // TODO: Save competition details to Firestore
     console.log('Saving competition:', id, competition);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Placeholder logic - Replace with actual upload handling (e.g. Firebase Storage)
+      const imageUrl = URL.createObjectURL(file);
+      setCompetition({ ...competition, image: imageUrl });
+    }
   };
 
   return (
@@ -167,8 +177,30 @@ export default function CompetitionSettings() {
             </>
           )}
 
-          {/* Placeholder tabs */}
-          {activeTab === 'Branding' && <p>Coming soon: Branding settings</p>}
+          {activeTab === 'Branding' && (
+            <>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Upload Competition Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
+                />
+              </div>
+              {competition.image && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-400 mb-1">Preview:</p>
+                  <img
+                    src={competition.image}
+                    alt="Competition Preview"
+                    className="rounded border border-[#333] max-h-64 object-contain"
+                  />
+                </div>
+              )}
+            </>
+          )}
+
           {activeTab === 'Athlete' && <p>Coming soon: Athlete registration settings</p>}
           {activeTab === 'Event' && <p>Coming soon: Event setup</p>}
           {activeTab === 'Rules' && <p>Coming soon: Rules and sanctioning</p>}
