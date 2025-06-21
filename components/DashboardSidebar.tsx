@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { User, Trophy, Shield } from 'lucide-react'; // Add icons
 
 interface MenuItem {
   id: string;
@@ -10,13 +11,15 @@ interface MenuItem {
 interface MenuSection {
   id: string;
   title: string;
+  icon: JSX.Element;
   items: MenuItem[];
 }
 
 const menuSections: MenuSection[] = [
   {
     id: 'athlete',
-    title: 'Athlete Menu',
+    title: 'Athlete',
+    icon: <User className="w-5 h-5 mr-2" />,
     items: [
       { id: 'profile', label: 'Profile', path: '/dashboard/athlete/profile' },
       { id: 'bio', label: 'Bio', path: '/dashboard/athlete/bio' },
@@ -26,19 +29,21 @@ const menuSections: MenuSection[] = [
   },
   {
     id: 'competition',
-    title: 'Competition Menu',
+    title: 'Competition',
+    icon: <Trophy className="w-5 h-5 mr-2" />,
     items: [
       { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
-      { id: 'new-competition', label: 'New Competition', path: '/dashboard/competition/new-competition' },
+      { id: 'show-time', label: 'Show Time', path: '/dashboard/competition/show-time' },
     ],
   },
   {
     id: 'admin',
-    title: 'Admin Menu',
+    title: 'Admin',
+    icon: <Shield className="w-5 h-5 mr-2" />,
     items: [
       { id: 'manage-users', label: 'Manage Users', path: '/dashboard/admin/manage-users' },
       { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
-      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' }, // Added line
+      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' },
     ],
   },
 ];
@@ -52,7 +57,6 @@ export default function DashboardSidebar() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Parent headers as links */}
       {menuSections.map((section) => {
         const isActive = section === activeSection;
         const firstChildPath = section.items[0]?.path || '#';
@@ -61,16 +65,16 @@ export default function DashboardSidebar() {
           <Link
             key={section.id}
             href={firstChildPath}
-            className={`rounded-md px-3 py-2 font-semibold text-sm uppercase tracking-wide block transition ${
-              isActive ? 'bg-[#00FF00] text-black' : 'text-[#00FF00] hover:text-[#00FF00]'
+            className={`rounded-md px-3 py-2 text-[20px] uppercase tracking-wide block transition flex items-center ${
+              isActive ? 'bg-[#00FF00] text-black font-bold' : 'text-[#00FF00] hover:text-[#00FF00] font-normal'
             }`}
           >
+            {section.icon}
             {section.title}
           </Link>
         );
       })}
 
-      {/* Active section's children shown beneath all parents */}
       {activeSection && (
         <ul className="flex flex-col gap-1 pt-2 pl-4 border-t border-[#333] mt-2">
           {activeSection.items.map((item) => {
@@ -79,9 +83,9 @@ export default function DashboardSidebar() {
               <li key={item.id}>
                 <Link
                   href={item.path}
-                  className={`block px-2 py-1 rounded transition-colors ${
+                  className={`block px-2 py-1 rounded transition-colors text-[20px] font-normal ${
                     isActiveItem
-                      ? 'text-[#00FF00] font-semibold'
+                      ? 'text-[#00FF00]'
                       : 'text-white hover:text-[#00FF00]'
                   }`}
                 >

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import DashboardLayout from '../../../components/layouts/DashboardLayout';
 import Modal from '../../../components/ui/Modal';
+import Link from 'next/link';
 
 export default function ManageUsers() {
   const [users, setUsers] = useState<any[]>([]);
@@ -39,6 +40,22 @@ export default function ManageUsers() {
     }
   };
 
+  const toggleAdmin = async (user: any) => {
+    const userRef = doc(db, 'users', user.id);
+    const updatedRole = user.role === 'admin' ? 'user' : 'admin';
+    await updateDoc(userRef, { role: updatedRole });
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, role: updatedRole } : u))
+    );
+  };
+
+  const deleteUser = async (userId: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+    if (!confirmDelete) return;
+    await deleteDoc(doc(db, 'users', userId));
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+  };
+
   const filteredUsers = users.filter((user) =>
     user.email?.toLowerCase().includes(search.toLowerCase())
   );
@@ -62,18 +79,36 @@ export default function ManageUsers() {
           {filteredUsers.map((user) => (
             <div
               key={user.id}
-              className="bg-[#1A1A1A] p-4 rounded flex justify-between items-center"
+              className="bg-[#1A1A1A] p-4 rounded flex flex-col md:flex-row justify-between items-start md:items-center gap-2"
             >
               <div>
                 <p className="font-semibold text-white">{user.email}</p>
                 <p className="text-sm text-gray-400">Role: {user.role}</p>
               </div>
-              <button
-                onClick={() => openModal(user)}
-                className="text-[#00FF00] font-medium hover:underline"
-              >
-                Edit
-              </button>
+              <div className="flex gap-2 flex-wrap">
+                <Link
+                  href={`/dashboard/admin/users/${user.id}`}
+                  className="bg-[#00FF00] text-black px-4 py-1 text-sm rounded"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={() => toggleAdmin(user)}
+                  className={`px-4 py-1 text-sm rounded ${
+                    user.role === 'admin'
+                      ? 'border border-[#00FF00] text-[#00FF00]'
+                      : 'bg-[#00FF00] text-black'
+                  }`}
+                >
+                  {user.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                </button>
+                <button
+                  onClick={() => deleteUser(user.id)}
+                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
