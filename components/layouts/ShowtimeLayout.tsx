@@ -1,3 +1,6 @@
+// components/layouts/ShowtimeLayout.tsx
+'use client';
+
 import React from 'react';
 import { useRouter } from 'next/router';
 import ShowtimeSidebar from '../showtime/ShowtimeSidebar';
@@ -13,7 +16,6 @@ export default function ShowtimeLayout({ children }: ShowtimeLayoutProps) {
   if (typeof router.query.competitionId === 'string') {
     competitionId = router.query.competitionId;
   } else {
-    // fallback parsing from URL path
     const segments = router.asPath.split('/');
     competitionId = segments[segments.indexOf('show-time') + 1] || null;
   }
@@ -25,7 +27,7 @@ export default function ShowtimeLayout({ children }: ShowtimeLayoutProps) {
   return (
     <div className="flex">
       <ShowtimeSidebar competitionId={competitionId} />
-      <main className="flex-1 mt-6">{children}</main>
+      <main className="flex-1 mt-6 pl-6 pr-6">{children}</main>
     </div>
   );
 }

@@ -3,62 +3,65 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-  Sparkles,
-  LayoutDashboard,
   Users,
+  ListOrdered,
   CalendarDays,
   Clapperboard,
-  Workflow,
+  GitBranch,
   Monitor,
-  BarChart2,
-  ArrowLeftCircle,
+  BarChart3,
+  Sparkles,
+  LayoutGrid
 } from 'lucide-react';
 
-export default function ShowtimeSidebar({ competitionId }: { competitionId: string }) {
-  const router = useRouter();
+interface ShowtimeSidebarProps {
+  competitionId: string;
+}
 
-  if (!competitionId || typeof competitionId !== 'string') {
-    return null; // fallback UI
-  }
+export default function ShowtimeSidebar({ competitionId }: ShowtimeSidebarProps) {
+  const router = useRouter();
+  const currentRoute = router.asPath;
 
   const links = [
-    { name: 'Overview', href: `/dashboard/competition/show-time/${competitionId}`, icon: <LayoutDashboard /> },
-    { name: 'Athlete Registration', href: `/dashboard/competition/show-time/${competitionId}/athlete-registration`, icon: <Users /> },
-    { name: 'Events', href: `/dashboard/competition/show-time/${competitionId}/events`, icon: <CalendarDays /> },
-    { name: 'Stage', href: `/dashboard/competition/show-time/${competitionId}/stage`, icon: <Clapperboard /> },
-    { name: 'Screen Flow', href: `/dashboard/competition/show-time/${competitionId}/screen-flow`, icon: <Workflow /> },
-    { name: 'Screens', href: `/dashboard/competition/show-time/${competitionId}/screens`, icon: <Monitor /> },
-    { name: 'Live Scoreboard', href: `/dashboard/competition/show-time/${competitionId}/scoreboard`, icon: <BarChart2 /> },
-    { name: 'Back to Dashboard', href: `/dashboard/competition/show-time`, icon: <ArrowLeftCircle /> },
+    { name: 'Overview', path: 'overview', icon: <LayoutGrid size={18} /> },
+    { name: 'Athlete Registration', path: 'athlete-registration', icon: <Users size={18} /> },
+    { name: 'Events', path: 'events', icon: <CalendarDays size={18} /> },
+    { name: 'Stage', path: 'stage', icon: <Clapperboard size={18} /> },
+    { name: 'Screen Flow', path: 'screen-flow', icon: <GitBranch size={18} /> },
+    { name: 'Screens', path: 'screens', icon: <Monitor size={18} /> },
+    { name: 'Live Scoreboard', path: 'live-scoreboard', icon: <BarChart3 size={18} /> },
   ];
 
   return (
-    <div className="bg-[#111] w-60 min-h-screen p-4 border-r border-[#2a2a2a]">
-      <div className="mb-6 px-2 pt-4 pb-2">
-        <p className="font-bold text-sm flex items-center space-x-2 text-[#00FF00]">
-          <Sparkles className="text-[#00FF00]" />
-          <span className="text-lg">ShowTime</span>
-        </p>
+    <aside className="w-64 bg-[#0d0d0d] border-r border-[#1a1a1a] h-screen p-4">
+      <div className="flex items-center text-[#00ff00] font-bold text-lg mb-6">
+        <Sparkles size={18} className="mr-2" />
+        ShowTime
       </div>
 
-      <ul className="space-y-2">
-        {links.map((link) => (
-          <li key={link.name}>
-            <Link href={link.href}>
-              <div
-                className={`flex items-center px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
-                  router.asPath.startsWith(link.href)
-                    ? 'bg-[#00FF00] text-black font-bold'
-                    : 'text-white hover:bg-[#222]'
-                }`}
-              >
-                <span className="mr-2 text-lg">{link.icon}</span>
-                {link.name}
-              </div>
+      <nav className="space-y-2">
+        {links.map((link) => {
+          const href = {
+            pathname: `/dashboard/competition/show-time/[competitionId]/${link.path}`,
+            query: { competitionId },
+          };
+          const currentHref = `/dashboard/competition/show-time/${competitionId}/${link.path}`;
+          const isActive = currentRoute === currentHref;
+
+          return (
+            <Link
+              key={link.path}
+              href={href}
+              className={`flex items-center px-4 py-2 hover:text-[#00ff00] ${
+                isActive ? 'border-l-4 border-[#00ff00] font-bold text-[#00ff00]' : 'text-white'
+              }`}
+            >
+              <span className="mr-2">{link.icon}</span>
+              {link.name}
             </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }
