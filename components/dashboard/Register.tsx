@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function AthleteRegister() {
   const router = useRouter();
   const { id } = router.query; // expects ?id=competitionId
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -21,14 +21,14 @@ export default function AthleteRegister() {
   });
 
   useEffect(() => {
-    if (currentUser) {
+    if (user) {
       setFormData((prev) => ({
         ...prev,
-        email: currentUser.email || '',
-        name: currentUser.displayName || ''
+        email: user.email || '',
+        name: user.displayName || ''
       }));
     }
-  }, [currentUser]);
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,7 +36,7 @@ export default function AthleteRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id || !currentUser) {
+    if (!id || !user) {
       alert('Missing competition ID or user is not logged in.');
       return;
     }
@@ -44,7 +44,7 @@ export default function AthleteRegister() {
     const ref = collection(db, 'competitions', id as string, 'athletes');
     await addDoc(ref, {
       ...formData,
-      uid: currentUser.uid,
+      uid: user.uid,
       registeredAt: new Date()
     });
 
