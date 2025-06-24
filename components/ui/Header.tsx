@@ -1,13 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/router'; // ✅ For pages/ directory
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import AuthModal from '@/components/ui/AuthModal';
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const { pathname } = useRouter(); // ✅ Correct hook for pages directory
+
+  if (loading) return null;
 
   const handleSignOut = async () => {
     try {
@@ -15,6 +19,11 @@ export default function Header() {
     } catch (err) {
       console.error('Failed to sign out:', err);
     }
+  };
+
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === '/';
+    return pathname.startsWith(path);
   };
 
   return (
@@ -29,24 +38,47 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="flex items-center space-x-10 text-[20px] font-normal">
-            <Link href="/" className="hover:text-[#00FF00] transition-colors">Home</Link>
-            <Link href="/competitions" className="hover:text-[#00FF00] transition-colors">Competitions</Link>
-            <Link href="/dashboard" className="hover:text-[#00FF00] transition-colors">Dashboard</Link>
-            <Link href="/support" className="hover:text-[#00FF00] transition-colors">Support</Link>
+            <Link
+              href="/"
+              className={`transition-colors ${isActive('/') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
+            >
+              Home
+            </Link>
+            <Link
+              href="/competitions"
+              className={`transition-colors ${isActive('/competitions') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
+            >
+              Competitions
+            </Link>
+            <Link
+              href="/dashboard"
+              className={`transition-colors ${isActive('/dashboard') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/support"
+              className={`transition-colors ${isActive('/support') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
+            >
+              Support
+            </Link>
 
             {user ? (
-              <button
-                onClick={handleSignOut}
-                className="hover:text-[#00FF00] transition-colors"
-              >
-                Logout
-              </button>
+              <>
+                <span className="text-[#00FF00]">{user.displayName || user.email}</span>
+                <button
+                  onClick={handleSignOut}
+                  className="hover:text-[#00FF00] transition-colors"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="text-[#00FF00] hover:underline"
+                className={`transition-colors ${authModalOpen ? 'text-[#00FF00]' : 'text-white hover:text-[#00FF00]'}`}
               >
-                Account
+                Login / Register
               </button>
             )}
           </nav>

@@ -33,9 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-
       if (currentUser) {
+        setUser(currentUser);
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
           if (userDoc.exists()) {
@@ -49,10 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRole(null);
         }
       } else {
+        setUser(null);
         setRole(null);
       }
 
-      setLoading(false); // Done loading regardless of result
+      setLoading(false); // ✅ Always clear loading after checking auth
     });
 
     return () => unsubscribe();
@@ -63,12 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setRole(null);
     setLoading(false);
-    router.push('/login');
+    router.push('/');
   };
 
   return (
     <AuthContext.Provider value={{ user, role, loading, logout }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }

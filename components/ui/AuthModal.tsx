@@ -5,9 +5,13 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { useRouter } from 'next/router';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -23,6 +27,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -31,6 +37,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setError('');
     setMessage('');
     try {
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
+
       if (isRegister) {
         const res = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, 'users', res.user.uid), {
@@ -42,7 +53,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+
       onClose();
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
     }
@@ -136,6 +149,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               Forgot Password?
             </button>
           )}
+
+          <label className="flex items-center text-sm text-white space-x-2">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
+              className="form-checkbox text-green-500"
+            />
+            <span>Remember Me</span>
+          </label>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
           {message && <p className="text-green-500 text-sm">{message}</p>}
