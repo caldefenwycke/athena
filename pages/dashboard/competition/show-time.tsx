@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
-import { useAuth } from '../../../context/AuthContext';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import DashboardLayout from '../../../components/layouts/DashboardLayout';
 
 export default function ShowTimeSelector() {

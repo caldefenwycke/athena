@@ -7,7 +7,7 @@ import {
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../../lib/firebase';
+import { auth, db } from '@/lib/firebase';
 
 interface AuthModalProps {
   isOpen: boolean;

@@ -1,7 +1,7 @@
 // context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/router';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 

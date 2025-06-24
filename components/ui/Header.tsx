@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
-import AuthModal from './ui/AuthModal';
+import AuthModal from '@/components/ui/AuthModal';
 
 export default function Header() {
   const { user, logout } = useAuth();

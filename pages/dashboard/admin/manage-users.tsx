@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { db } from '@/lib/firebase';
 import DashboardLayout from '../../../components/layouts/DashboardLayout';
 import Modal from '../../../components/ui/Modal';
 import Link from 'next/link';
