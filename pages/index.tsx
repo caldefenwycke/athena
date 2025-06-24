@@ -1,6 +1,6 @@
 // pages/index.tsx
 import Head from 'next/head';
-import Header from '@/components/Header';
+import Header from '@/components/ui/Header';
 import { useState } from 'react';
 
 interface Competition {
