@@ -1,7 +1,7 @@
 // components/layouts/DashboardLayout.tsx
 import { ReactNode } from 'react';
 import DashboardSidebar from '@/components/ui/DashboardSidebar';
-import ProtectedRoute from '@/components/protected/ProtectedRoute';
+import ProtectedRoute from '@/components/Protected/ProtectedRoute';
 
 interface DashboardLayoutProps {
   children: ReactNode;
