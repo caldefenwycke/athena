@@ -6,3 +6,6 @@ export { default as RulesTab } from './RulesTab';
 export { default as FinancialTab } from './FinancialTab';
 export { default as LegalTab } from './LegalTab';
 export { default as SponsorshipTab } from './SponsorshipTab';
+export { default as OverviewTab } from './OverviewTab';
+export { default as CommunicationTab } from './CommunicationTab';
+export { default as RosterTab } from './AthleteRosterTab';

@@ -11,6 +11,9 @@ import {
   LegalTab,
   SponsorshipTab,
 } from '@/components/competition-settings';
+import OverviewTab from '@/components/competition-settings/OverviewTab';
+import RosterTab from '@/components/competition-settings/AthleteRosterTab';
+import CommunicationTab from '@/components/competition-settings/CommunicationTab'; // ✅ Import fixed
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
@@ -39,6 +42,17 @@ type CompetitionType = {
   useTemplateWaiver: boolean;
   sponsorName: string;
   sponsorLogo: string;
+
+  // ✅ Add communication fields
+  directMessagingEnabled: boolean;
+  groupMessagingEnabled: boolean;
+  divisionMessagingEnabled: boolean;
+  pinnedNotice: string;
+  mcAnnouncements: string;
+  organizerEmail: string;
+  organizerPhone: string;
+  autoReplyMessage: string;
+  attachments: File[];
 };
 
 function SettingsPage() {
@@ -68,7 +82,18 @@ function SettingsPage() {
     customWaiver: '',
     useTemplateWaiver: false,
     sponsorName: '',
-    sponsorLogo: ''
+    sponsorLogo: '',
+
+    // ✅ Initialize communication fields
+    directMessagingEnabled: false,
+    groupMessagingEnabled: false,
+    divisionMessagingEnabled: false,
+    pinnedNotice: '',
+    mcAnnouncements: '',
+    organizerEmail: '',
+    organizerPhone: '',
+    autoReplyMessage: '',
+    attachments: [],
   });
 
   const addEvent = () => {
@@ -108,6 +133,7 @@ function SettingsPage() {
     setCompetition({ ...competition, events: updated });
   };
 
+  // ✅ Updated handleSave with Firebase attachment logic
   const handleSave = async () => {
     if (!user) {
       alert('You must be logged in to save settings.');
@@ -124,9 +150,20 @@ function SettingsPage() {
         imageUrl = await getDownloadURL(imageRef);
       }
 
+      let attachmentUrls: string[] = [];
+      if (competition.attachments && competition.attachments.length > 0) {
+        const uploadPromises = competition.attachments.map(async (file) => {
+          const fileRef = ref(storage, `messageAttachments/${compId}/${file.name}`);
+          await uploadBytes(fileRef, file);
+          return await getDownloadURL(fileRef);
+        });
+        attachmentUrls = await Promise.all(uploadPromises);
+      }
+
       const competitionData = {
         ...competition,
         image: imageUrl,
+        attachments: attachmentUrls,
         organizerId: user.uid,
         updatedAt: new Date().toISOString(),
       };
@@ -158,7 +195,8 @@ function SettingsPage() {
         <div className="mb-6 flex flex-wrap gap-2">
           {[
             'Basic', 'Branding', 'Athlete', 'Event',
-            'Rules', 'Financial', 'Legal', 'Sponsorship'
+            'Rules', 'Financial', 'Legal', 'Sponsorship',
+            'Overview', 'Roster', 'Communication'
           ].map((tab) => (
             <button
               key={tab}
@@ -175,15 +213,9 @@ function SettingsPage() {
         </div>
 
         <div className="bg-[#111] p-6 rounded-lg shadow-lg border border-[#1a1a1a]">
-          {activeTab === 'Basic' && (
-            <BasicTab competition={competition} setCompetition={setCompetition} />
-          )}
-          {activeTab === 'Branding' && (
-            <BrandingTab competition={competition} setCompetition={setCompetition} />
-          )}
-          {activeTab === 'Athlete' && (
-            <AthleteTab competition={competition} setCompetition={setCompetition} />
-          )}
+          {activeTab === 'Basic' && <BasicTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Branding' && <BrandingTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Athlete' && <AthleteTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Event' && (
             <EventTab
               competition={competition}
@@ -196,18 +228,13 @@ function SettingsPage() {
               removeDivision={removeDivision}
             />
           )}
-          {activeTab === 'Rules' && (
-            <RulesTab competition={competition} setCompetition={setCompetition} />
-          )}
-          {activeTab === 'Financial' && (
-            <FinancialTab competition={competition} setCompetition={setCompetition} />
-          )}
-          {activeTab === 'Legal' && (
-            <LegalTab competition={competition} setCompetition={setCompetition} />
-          )}
-          {activeTab === 'Sponsorship' && (
-            <SponsorshipTab competition={competition} setCompetition={setCompetition} />
-          )}
+          {activeTab === 'Rules' && <RulesTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Financial' && <FinancialTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Legal' && <LegalTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Sponsorship' && <SponsorshipTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Overview' && <OverviewTab competition={competition} />}
+          {activeTab === 'Roster' && <RosterTab competitionId={router.query.id as string} />}
+          {activeTab === 'Communication' && <CommunicationTab competition={competition} setCompetition={setCompetition} />}
         </div>
 
         <div className="flex justify-end mt-6">

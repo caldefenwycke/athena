@@ -1,4 +1,3 @@
-// components/dashboard/competition/settings/tabs/AthleteTab.tsx
 import React from 'react';
 
 interface AthleteTabProps {
