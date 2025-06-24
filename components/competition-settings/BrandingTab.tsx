@@ -1,35 +1,44 @@
+// components/dashboard/competition/settings/tabs/BrandingTab.tsx
 import React from 'react';
 
-interface TabProps {
-  competition: any;
-  setCompetition: (value: any) => void;
+interface BrandingTabProps {
+  competition: {
+    image: string;
+    imageFile: File | null;
+  };
+  setCompetition: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const BrandingTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
+export default function BrandingTab({ competition, setCompetition }: BrandingTabProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // You may want to convert the file to a URL or upload it to storage later
-      setCompetition({ ...competition, image: file.name });
+      setCompetition((prev: any) => ({
+        ...prev,
+        imageFile: file,
+        image: URL.createObjectURL(file),
+      }));
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-xl">
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Upload Competition Image</label>
+        <label className="block text-sm text-gray-400 mb-1">Competition Image</label>
+        {competition.image && (
+          <img
+            src={competition.image}
+            alt="Preview"
+            className="w-48 h-48 object-cover rounded border border-[#333] mb-2"
+          />
+        )}
         <input
           type="file"
           accept="image/*"
-          className="w-full text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-green-600 file:text-white hover:file:bg-green-700"
           onChange={handleFileChange}
+          className="block w-full text-white"
         />
-        {competition.image && (
-          <p className="text-sm text-gray-500 mt-2">Selected: {competition.image}</p>
-        )}
       </div>
     </div>
   );
-};
-
-export default BrandingTab;
+}

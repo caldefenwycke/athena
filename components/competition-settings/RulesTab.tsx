@@ -1,69 +1,87 @@
-import React from 'react';
+// components/dashboard/competition/settings/tabs/RulesTab.tsx
+import React, { useState } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
+import { useRouter } from 'next/router';
 
-interface TabProps {
-  competition: any;
-  setCompetition: (value: any) => void;
+interface RulesTabProps {
+  competition: {
+    sanctioningBody: string;
+    tieBreakerRule: string;
+    rulesDoc: string;
+  };
+  setCompetition: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const RulesTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const RulesTab: React.FC<RulesTabProps> = ({ competition, setCompetition }) => {
+  const router = useRouter();
+  const { id } = router.query;
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setCompetition({ ...competition, rulesDoc: file.name });
+    if (!file || !id) return;
+
+    try {
+      setUploading(true);
+      const fileRef = ref(storage, `rulesDocs/${id}/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      setCompetition({ ...competition, rulesDoc: url });
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      alert('File upload failed');
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-xl">
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Sanctioning Body</label>
+        <label className="block text-sm text-gray-400 mb-1">Sanctioning Body</label>
         <select
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.sanctioningBody}
           onChange={(e) =>
             setCompetition({ ...competition, sanctioningBody: e.target.value })
           }
         >
-          <option>Strongman Corp</option>
-          <option>OSG</option>
-          <option>USS</option>
-          <option>Unsanctioned</option>
+          <option value="Unsanctioned">Unsanctioned</option>
+          <option value="Strongman Corp">Strongman Corp</option>
+          <option value="Giants Live">Giants Live</option>
+          <option value="Official Strongman Games">Official Strongman Games</option>
+          <option value="Custom">Custom</option>
         </select>
       </div>
 
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Tie Breaker Rule</label>
+        <label className="block text-sm text-gray-400 mb-1">Tiebreaker Rule</label>
         <input
           type="text"
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.tieBreakerRule}
           onChange={(e) =>
             setCompetition({ ...competition, tieBreakerRule: e.target.value })
           }
+          placeholder="e.g. Fastest Time, Most Reps in Last Event"
         />
       </div>
 
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Upload Rules Document</label>
+        <label className="block text-sm text-gray-400 mb-1">Upload Rules Document (PDF)</label>
         <input
           type="file"
           accept=".pdf,.doc,.docx"
-          className="w-full text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-green-600 file:text-white hover:file:bg-green-700"
-          onChange={handleFileChange}
+          onChange={handleFileUpload}
+          className="block w-full text-sm text-gray-300"
         />
+        {uploading && <p className="text-gray-400 text-sm mt-1">Uploading...</p>}
         {competition.rulesDoc && (
-          <p className="text-sm text-gray-500 mt-2">Selected: {competition.rulesDoc}</p>
+          <p className="text-green-400 text-sm mt-1">
+            📄 <a href={competition.rulesDoc} target="_blank" rel="noopener noreferrer">View Uploaded Document</a>
+          </p>
         )}
-      </div>
-
-      <div>
-        <label className="block mb-1 text-sm text-gray-400">Rules Generator</label>
-        <input
-          type="text"
-          disabled
-          placeholder="Coming Soon"
-          className="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-2 text-gray-500 cursor-not-allowed"
-        />
       </div>
     </div>
   );

@@ -1,42 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import Link from 'next/link';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
+import { Timestamp } from 'firebase/firestore';
 
 interface Competition {
   id: string;
   title: string;
   description: string;
-  date: string;
+  date: Timestamp; // coming from Firestore
   status: 'active' | 'past';
 }
 
-const competitionsData: Competition[] = [
-  {
-    id: '1',
-    title: 'Herm Strongest 2026',
-    description: 'Strongman competition in Herm',
-    date: '01/07/2025',
-    status: 'active',
-  },
-  {
-    id: '2',
-    title: 'Summer Strength Festival',
-    description: 'The biggest strength event of the summer',
-    date: '12/07/2025',
-    status: 'active',
-  },
-  {
-    id: '3',
-    title: 'Winter Classic 2024',
-    description: 'Cold weather showdown for elite athletes',
-    date: '15/12/2024',
-    status: 'past',
-  },
-];
-
 export default function MyCompetitionsPage() {
+  const { user } = useAuth();
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
-  const filtered = competitionsData.filter((c) => c.status === activeTab);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCompetitions = async () => {
+      const q = query(
+        collection(db, 'competitions'),
+        where('organizerId', '==', user.uid)
+      );
+
+      const snapshot = await getDocs(q);
+      const comps = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Competition, 'id'>),
+      }));
+      setCompetitions(comps);
+    };
+
+    fetchCompetitions();
+  }, [user]);
+
+  const filtered = competitions.filter((c) => c.status === activeTab);
 
   return (
     <DashboardLayout>
@@ -91,7 +94,9 @@ export default function MyCompetitionsPage() {
                   <div>
                     <h4 className="text-[#00FF00] font-semibold text-lg mb-1">{comp.title}</h4>
                     <p className="text-white text-sm mb-2">{comp.description}</p>
-                    <p className="text-sm text-gray-400">📅 {comp.date}</p>
+                    <p className="text-sm text-gray-400">
+                      📅 {comp.date.toDate().toLocaleDateString()}
+                    </p>
                   </div>
                   <Link href={`/dashboard/competition/${comp.id}/settings`}>
                     <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">

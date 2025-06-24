@@ -1,42 +1,71 @@
-import React from 'react';
+// components/dashboard/competition/settings/tabs/SponsorshipTab.tsx
+import React, { useState } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 
-interface TabProps {
-  competition: any;
-  setCompetition: (value: any) => void;
+interface SponsorshipTabProps {
+  competition: {
+    sponsorName: string;
+    sponsorLogo: string;
+  };
+  setCompetition: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const SponsorshipTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+const SponsorshipTab: React.FC<SponsorshipTabProps> = ({ competition, setCompetition }) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setCompetition({ ...competition, sponsorLogo: file.name });
+    if (!file) return;
+
+    setUploading(true);
+
+    try {
+      const storageRef = ref(storage, `sponsorLogos/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      setCompetition((prev: any) => ({
+        ...prev,
+        sponsorLogo: downloadURL,
+      }));
+    } catch (error) {
+      console.error('Error uploading sponsor logo:', error);
+      alert('Logo upload failed.');
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-xl">
       <div>
         <label className="block mb-1 text-sm text-gray-400">Sponsor Name</label>
         <input
           type="text"
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.sponsorName}
           onChange={(e) =>
-            setCompetition({ ...competition, sponsorName: e.target.value })
+            setCompetition((prev: any) => ({ ...prev, sponsorName: e.target.value }))
           }
         />
       </div>
 
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Upload Sponsor Logo</label>
+        <label className="block mb-1 text-sm text-gray-400">Sponsor Logo</label>
         <input
           type="file"
           accept="image/*"
           onChange={handleLogoUpload}
-          className="w-full text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-green-600 file:text-white hover:file:bg-green-700"
+          className="text-sm text-gray-300"
         />
+        {uploading && <p className="text-gray-400 mt-1">Uploading...</p>}
         {competition.sponsorLogo && (
-          <p className="text-sm text-gray-500 mt-2">Selected: {competition.sponsorLogo}</p>
+          <img
+            src={competition.sponsorLogo}
+            alt="Sponsor Logo"
+            className="mt-2 max-h-32 rounded border border-[#444]"
+          />
         )}
       </div>
     </div>

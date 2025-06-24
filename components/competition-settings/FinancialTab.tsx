@@ -1,18 +1,24 @@
+// components/dashboard/competition/settings/tabs/FinancialTab.tsx
 import React from 'react';
 
-interface TabProps {
-  competition: any;
-  setCompetition: (value: any) => void;
+interface FinancialTabProps {
+  competition: {
+    registrationCost: number;
+    prizePurse: number;
+    extraTshirtOption: boolean;
+  };
+  setCompetition: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const FinancialTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
+const FinancialTab: React.FC<FinancialTabProps> = ({ competition, setCompetition }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-xl">
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Athlete Registration Cost (£)</label>
+        <label className="block text-sm text-gray-400 mb-1">Registration Cost (£)</label>
         <input
           type="number"
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          min="0"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.registrationCost}
           onChange={(e) =>
             setCompetition({ ...competition, registrationCost: parseFloat(e.target.value || '0') })
@@ -21,10 +27,11 @@ const FinancialTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
       </div>
 
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Prize Purse (£)</label>
+        <label className="block text-sm text-gray-400 mb-1">Prize Purse (£)</label>
         <input
           type="number"
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          min="0"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.prizePurse}
           onChange={(e) =>
             setCompetition({ ...competition, prizePurse: parseFloat(e.target.value || '0') })
@@ -40,7 +47,7 @@ const FinancialTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
             setCompetition({ ...competition, extraTshirtOption: e.target.checked })
           }
         />
-        <label className="text-gray-300">Allow Purchase of Extra T-Shirts</label>
+        <label className="text-gray-300">Offer Extra T-Shirt Purchase Option</label>
       </div>
     </div>
   );

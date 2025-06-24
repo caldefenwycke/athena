@@ -1,71 +1,82 @@
+// components/dashboard/competition/settings/tabs/LegalTab.tsx
 import React from 'react';
 
-interface TabProps {
-  competition: any;
-  setCompetition: (value: any) => void;
+interface CompetitionType {
+  name: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  image: string;
+  imageFile: File | null;
+  registrationCloseDate: string;
+  maxAthletes: number;
+  requireTshirtSize: boolean;
+  requireWeightHeight: boolean;
+  events: any[];
+  sanctioningBody: string;
+  tieBreakerRule: string;
+  rulesDoc: string;
+  registrationCost: number;
+  prizePurse: number;
+  extraTshirtOption: boolean;
+  waiverType: 'athena' | 'custom';
+  customWaiver: string;
+  useTemplateWaiver: boolean;
+  sponsorName: string;
+  sponsorLogo: string;
 }
 
-const LegalTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
-  const handleWaiverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCompetition({ ...competition, customWaiver: file.name });
-    }
-  };
+interface LegalTabProps {
+  competition: CompetitionType;
+  setCompetition: React.Dispatch<React.SetStateAction<CompetitionType>>;
+}
 
+const LegalTab: React.FC<LegalTabProps> = ({ competition, setCompetition }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-xl">
+      {/* Waiver Type Selection */}
       <div>
-        <label className="block mb-1 text-sm text-gray-400">Waiver Type</label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2 text-gray-300">
-            <input
-              type="radio"
-              name="waiverType"
-              value="athena"
-              checked={competition.waiverType === 'athena'}
-              onChange={() => setCompetition({ ...competition, waiverType: 'athena' })}
-            />
-            Use Athena Waiver
-          </label>
-          <label className="flex items-center gap-2 text-gray-300">
-            <input
-              type="radio"
-              name="waiverType"
-              value="custom"
-              checked={competition.waiverType === 'custom'}
-              onChange={() => setCompetition({ ...competition, waiverType: 'custom' })}
-            />
-            Upload Custom Waiver
-          </label>
-        </div>
+        <label className="block text-sm text-gray-400 mb-1">Waiver Type</label>
+        <select
+          value={competition.waiverType}
+          onChange={(e) =>
+            setCompetition({ ...competition, waiverType: e.target.value as 'athena' | 'custom' })
+          }
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
+        >
+          <option value="athena">Use Athena Default Waiver</option>
+          <option value="custom">Upload Your Own Waiver</option>
+        </select>
       </div>
 
+      {/* Custom Waiver Input */}
       {competition.waiverType === 'custom' && (
         <div>
-          <label className="block mb-1 text-sm text-gray-400">Upload Waiver PDF</label>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleWaiverUpload}
-            className="w-full text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-green-600 file:text-white hover:file:bg-green-700"
+          <label className="block text-sm text-gray-400 mb-1">Custom Waiver Text</label>
+          <textarea
+            rows={6}
+            className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
+            value={competition.customWaiver}
+            onChange={(e) =>
+              setCompetition({ ...competition, customWaiver: e.target.value })
+            }
           />
-          {competition.customWaiver && (
-            <p className="text-sm text-gray-500 mt-2">Selected: {competition.customWaiver}</p>
-          )}
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={competition.useTemplateWaiver}
-          onChange={(e) =>
-            setCompetition({ ...competition, useTemplateWaiver: e.target.checked })
-          }
-        />
-        <label className="text-gray-300">Use Template Waiver (Optional)</label>
-      </div>
+      {/* Template Checkbox */}
+      {competition.waiverType === 'custom' && (
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={competition.useTemplateWaiver}
+            onChange={(e) =>
+              setCompetition({ ...competition, useTemplateWaiver: e.target.checked })
+            }
+          />
+          <label className="text-gray-300">Use Athena Template as a Starting Point</label>
+        </div>
+      )}
     </div>
   );
 };

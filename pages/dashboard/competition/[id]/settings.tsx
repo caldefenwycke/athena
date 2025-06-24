@@ -1,4 +1,3 @@
-// pages/dashboard/competition/[id]/settings.tsx
 import { ReactElement, useState } from 'react';
 import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
@@ -10,18 +9,50 @@ import {
   RulesTab,
   FinancialTab,
   LegalTab,
-  SponsorshipTab
+  SponsorshipTab,
 } from '@/components/competition-settings';
+import { doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+
+type CompetitionType = {
+  name: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  image: string;
+  imageFile: File | null;
+  registrationCloseDate: string;
+  maxAthletes: number;
+  requireTshirtSize: boolean;
+  requireWeightHeight: boolean;
+  events: any[];
+  sanctioningBody: string;
+  tieBreakerRule: string;
+  rulesDoc: string;
+  registrationCost: number;
+  prizePurse: number;
+  extraTshirtOption: boolean;
+  waiverType: 'athena' | 'custom';
+  customWaiver: string;
+  useTemplateWaiver: boolean;
+  sponsorName: string;
+  sponsorLogo: string;
+};
 
 function SettingsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('Basic');
-  const [competition, setCompetition] = useState({
+
+  const [competition, setCompetition] = useState<CompetitionType>({
     name: '',
     location: '',
     startDate: '',
     endDate: '',
     image: '',
+    imageFile: null,
     registrationCloseDate: '',
     maxAthletes: 0,
     requireTshirtSize: false,
@@ -77,21 +108,38 @@ function SettingsPage() {
     setCompetition({ ...competition, events: updated });
   };
 
-  const handleSave = () => {
-    // TODO: Implement save logic (e.g., send to Firestore or API)
-    console.log('Competition settings saved:', competition);
-    alert('Settings saved!');
-  };
+  const handleSave = async () => {
+    if (!user) {
+      alert('You must be logged in to save settings.');
+      return;
+    }
 
-  const tabProps = {
-    competition,
-    setCompetition,
-    addEvent,
-    removeEvent,
-    updateEvent,
-    addDivision,
-    updateDivision,
-    removeDivision
+    try {
+      const compId = router.query.id as string;
+      let imageUrl = competition.image;
+
+      if (competition.imageFile) {
+        const imageRef = ref(storage, `competitionImages/${compId}`);
+        await uploadBytes(imageRef, competition.imageFile);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      const competitionData = {
+        ...competition,
+        image: imageUrl,
+        organizerId: user.uid,
+        updatedAt: new Date().toISOString(),
+      };
+
+      delete competitionData.imageFile;
+
+      await setDoc(doc(db, 'competitions', compId), competitionData, { merge: true });
+
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings. Please try again.');
+    }
   };
 
   return (
@@ -127,14 +175,39 @@ function SettingsPage() {
         </div>
 
         <div className="bg-[#111] p-6 rounded-lg shadow-lg border border-[#1a1a1a]">
-          {activeTab === 'Basic' && <BasicTab {...tabProps} />}
-          {activeTab === 'Branding' && <BrandingTab {...tabProps} />}
-          {activeTab === 'Athlete' && <AthleteTab {...tabProps} />}
-          {activeTab === 'Event' && <EventTab {...tabProps} />}
-          {activeTab === 'Rules' && <RulesTab {...tabProps} />}
-          {activeTab === 'Financial' && <FinancialTab {...tabProps} />}
-          {activeTab === 'Legal' && <LegalTab {...tabProps} />}
-          {activeTab === 'Sponsorship' && <SponsorshipTab {...tabProps} />}
+          {activeTab === 'Basic' && (
+            <BasicTab competition={competition} setCompetition={setCompetition} />
+          )}
+          {activeTab === 'Branding' && (
+            <BrandingTab competition={competition} setCompetition={setCompetition} />
+          )}
+          {activeTab === 'Athlete' && (
+            <AthleteTab competition={competition} setCompetition={setCompetition} />
+          )}
+          {activeTab === 'Event' && (
+            <EventTab
+              competition={competition}
+              setCompetition={setCompetition}
+              addEvent={addEvent}
+              removeEvent={removeEvent}
+              updateEvent={updateEvent}
+              addDivision={addDivision}
+              updateDivision={updateDivision}
+              removeDivision={removeDivision}
+            />
+          )}
+          {activeTab === 'Rules' && (
+            <RulesTab competition={competition} setCompetition={setCompetition} />
+          )}
+          {activeTab === 'Financial' && (
+            <FinancialTab competition={competition} setCompetition={setCompetition} />
+          )}
+          {activeTab === 'Legal' && (
+            <LegalTab competition={competition} setCompetition={setCompetition} />
+          )}
+          {activeTab === 'Sponsorship' && (
+            <SponsorshipTab competition={competition} setCompetition={setCompetition} />
+          )}
         </div>
 
         <div className="flex justify-end mt-6">

@@ -1,18 +1,24 @@
+// components/dashboard/competition/settings/tabs/AthleteTab.tsx
 import React from 'react';
 
-interface TabProps {
-  competition: any;
-  setCompetition: (value: any) => void;
+interface AthleteTabProps {
+  competition: {
+    registrationCloseDate: string;
+    maxAthletes: number;
+    requireTshirtSize: boolean;
+    requireWeightHeight: boolean;
+  };
+  setCompetition: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const AthleteTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
+const AthleteTab: React.FC<AthleteTabProps> = ({ competition, setCompetition }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-xl">
       <div>
         <label className="block mb-1 text-sm text-gray-400">Registration Close Date</label>
         <input
           type="date"
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.registrationCloseDate}
           onChange={(e) =>
             setCompetition({ ...competition, registrationCloseDate: e.target.value })
@@ -24,10 +30,13 @@ const AthleteTab: React.FC<TabProps> = ({ competition, setCompetition }) => {
         <label className="block mb-1 text-sm text-gray-400">Max Athlete Count</label>
         <input
           type="number"
-          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2"
+          className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
           value={competition.maxAthletes}
           onChange={(e) =>
-            setCompetition({ ...competition, maxAthletes: parseInt(e.target.value || '0') })
+            setCompetition({
+              ...competition,
+              maxAthletes: parseInt(e.target.value || '0', 10),
+            })
           }
         />
       </div>

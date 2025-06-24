@@ -1,22 +1,40 @@
-// pages/dashboard/competition/new-competition.tsx
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
 
 export default function NewCompetition() {
   const router = useRouter();
+  const { user } = useAuth();
+
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
-    // Simulate ID creation (replace with Firestore logic if needed)
-    const newCompetitionId = `${Date.now()}`;
+    if (!user || !name || !location || !date) return;
 
-    // Save logic would go here
+    setLoading(true);
 
-    // Redirect to the settings page for the new competition
-    router.push(`/dashboard/competition/${newCompetitionId}/settings`);
+    try {
+      const docRef = await addDoc(collection(db, 'competitions'), {
+        title: name,
+        description: '', // You can make this a field on the form later
+        location,
+        date: Timestamp.fromDate(new Date(date)),
+        status: 'active', // default to active
+        organizerId: user.uid,
+      });
+
+      router.push(`/dashboard/competition/${docRef.id}/settings`);
+    } catch (err) {
+      console.error('Error creating competition:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,9 +73,12 @@ export default function NewCompetition() {
 
           <button
             onClick={handleCreate}
-            className="bg-[#00FF00] text-black px-4 py-2 rounded font-semibold hover:bg-[#00cc00] mt-4"
+            disabled={loading}
+            className={`bg-[#00FF00] text-black px-4 py-2 rounded font-semibold hover:bg-[#00cc00] mt-4 ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            Save & Go to Settings
+            {loading ? 'Creating...' : 'Save & Go to Settings'}
           </button>
         </div>
       </div>
