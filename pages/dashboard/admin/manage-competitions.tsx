@@ -5,6 +5,8 @@ import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { logSystemEvent } from '@/lib/logSystemEvent';
 
 interface Competition {
   id: string;
@@ -15,6 +17,7 @@ interface Competition {
 }
 
 export default function ManageCompetitions() {
+  const { user } = useAuth();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
 
   useEffect(() => {
@@ -31,6 +34,8 @@ export default function ManageCompetitions() {
   }, []);
 
   const deleteCompetition = async (compId: string, name?: string) => {
+    if (!user) return;
+
     const confirmDelete = window.confirm(
       `Are you sure you want to permanently delete "${name || 'this competition'}"? This cannot be undone.`
     );
@@ -40,6 +45,13 @@ export default function ManageCompetitions() {
       await deleteDoc(doc(db, 'competitions', compId));
       setCompetitions((prev) => prev.filter((c) => c.id !== compId));
       alert(`Competition "${name}" deleted successfully.`);
+
+      await logSystemEvent({
+        action: 'Competition Deleted',
+        performedBy: user.uid,
+        competitionId: compId,
+        details: `Deleted competition "${name}"`,
+      });
     } catch (error) {
       console.error('Error deleting competition:', error);
       alert('Failed to delete competition.');

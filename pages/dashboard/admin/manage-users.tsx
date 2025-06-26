@@ -6,8 +6,11 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase';
 import DashboardLayout from '../../../components/layouts/DashboardLayout';
 import Modal from '../../../components/ui/Modal';
+import { useAuth } from '@/context/AuthContext';
+import { logSystemEvent } from '@/lib/logSystemEvent';
 
 export default function ManageUsers() {
+  const { user } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -31,7 +34,7 @@ export default function ManageUsers() {
   };
 
   const saveRoleChange = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !user) return;
     try {
       const userRef = doc(db, 'users', selectedUser.id);
       await updateDoc(userRef, { role: newRole });
@@ -40,6 +43,13 @@ export default function ManageUsers() {
       );
       setModalOpen(false);
       alert(`Role updated for ${selectedUser.email}`);
+
+      await logSystemEvent({
+        action: 'Role Changed',
+        performedBy: user.uid,
+        targetUser: selectedUser.id,
+        details: `Role changed to ${newRole}`,
+      });
     } catch (error) {
       console.error('Error updating role:', error);
       alert('Failed to update role.');
@@ -57,6 +67,8 @@ export default function ManageUsers() {
   };
 
   const deleteUser = async (userId: string, email: string) => {
+    if (!user) return;
+
     const confirmDelete = window.confirm(
       `Are you sure you want to permanently delete ${email}? This cannot be undone.`
     );
@@ -66,6 +78,13 @@ export default function ManageUsers() {
       await deleteDoc(doc(db, 'users', userId));
       setUsers((prev) => prev.filter((u) => u.id !== userId));
       alert(`${email} deleted successfully.`);
+
+      await logSystemEvent({
+        action: 'User Deleted',
+        performedBy: user.uid,
+        targetUser: userId,
+        details: `Deleted user ${email}`,
+      });
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Failed to delete user.');
