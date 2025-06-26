@@ -1,86 +1,48 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { db } from '@/lib/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
 
 export default function NewCompetition() {
+  const [name, setName] = useState('');
   const router = useRouter();
   const { user } = useAuth();
 
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [date, setDate] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleCreate = async () => {
-    if (!user || !name || !location || !date) return;
-
-    setLoading(true);
-
-    try {
-      const docRef = await addDoc(collection(db, 'competitions'), {
-        title: name,
-        description: '', // You can make this a field on the form later
-        location,
-        date: Timestamp.fromDate(new Date(date)),
-        status: 'active', // default to active
-        organizerId: user.uid,
-      });
-
-      router.push(`/dashboard/competition/${docRef.id}/settings`);
-    } catch (err) {
-      console.error('Error creating competition:', err);
-    } finally {
-      setLoading(false);
+  const handleSubmit = async () => {
+    if (!user || !name.trim()) {
+      alert('Please enter a competition name and ensure you are logged in.');
+      return;
     }
+
+    const docRef = await addDoc(collection(db, 'competitions'), {
+      name: name,
+      status: 'active',
+      organizerId: user.uid,
+      createdAt: Timestamp.now(),
+    });
+
+    router.push(`/dashboard/competition/${docRef.id}/settings`);
   };
 
   return (
     <DashboardLayout>
-      <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-white mb-6">Create New Competition</h1>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Competition Name</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Location</label>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-[#222] border border-[#333] rounded px-3 py-2 text-white"
-            />
-          </div>
-
-          <button
-            onClick={handleCreate}
-            disabled={loading}
-            className={`bg-[#00FF00] text-black px-4 py-2 rounded font-semibold hover:bg-[#00cc00] mt-4 ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {loading ? 'Creating...' : 'Save & Go to Settings'}
-          </button>
-        </div>
+      <div className="p-6 text-white max-w-xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Create New Competition</h1>
+        <input
+          type="text"
+          placeholder="Competition Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full px-4 py-2 rounded bg-[#222] text-white border border-[#333] mb-4"
+        />
+        <button
+          onClick={handleSubmit}
+          className="bg-[#00FF00] hover:bg-[#00cc00] text-black font-bold px-6 py-2 rounded"
+        >
+          Save and Go to Settings
+        </button>
       </div>
     </DashboardLayout>
   );

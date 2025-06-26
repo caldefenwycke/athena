@@ -1,4 +1,6 @@
-import { ReactElement, useState } from 'react';
+'use client';
+
+import { ReactElement, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import {
@@ -13,8 +15,9 @@ import {
 } from '@/components/competition-settings';
 import OverviewTab from '@/components/competition-settings/OverviewTab';
 import RosterTab from '@/components/competition-settings/AthleteRosterTab';
-import CommunicationTab from '@/components/competition-settings/CommunicationTab'; // ✅ Import fixed
-import { doc, setDoc } from 'firebase/firestore';
+import CommunicationTab from '@/components/competition-settings/CommunicationTab';
+import DeleteTab from '@/components/competition-settings/DeleteTab';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
@@ -42,8 +45,6 @@ type CompetitionType = {
   useTemplateWaiver: boolean;
   sponsorName: string;
   sponsorLogo: string;
-
-  // ✅ Add communication fields
   directMessagingEnabled: boolean;
   groupMessagingEnabled: boolean;
   divisionMessagingEnabled: boolean;
@@ -53,6 +54,7 @@ type CompetitionType = {
   organizerPhone: string;
   autoReplyMessage: string;
   attachments: File[];
+  status?: string; // ✅ Added in case needed for Delete tab logic
 };
 
 function SettingsPage() {
@@ -83,8 +85,6 @@ function SettingsPage() {
     useTemplateWaiver: false,
     sponsorName: '',
     sponsorLogo: '',
-
-    // ✅ Initialize communication fields
     directMessagingEnabled: false,
     groupMessagingEnabled: false,
     divisionMessagingEnabled: false,
@@ -96,10 +96,35 @@ function SettingsPage() {
     attachments: [],
   });
 
+  useEffect(() => {
+    const fetchCompetitionData = async () => {
+      const compId = router.query.id as string;
+      if (!compId) return;
+
+      try {
+        const docRef = doc(db, 'competitions', compId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setCompetition((prev) => ({
+            ...prev,
+            ...docSnap.data(),
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching competition data:', error);
+      }
+    };
+
+    if (router.isReady) {
+      fetchCompetitionData();
+    }
+  }, [router.isReady, router.query.id]);
+
   const addEvent = () => {
     setCompetition({
       ...competition,
-      events: [...competition.events, { name: '', scoring: 'Points', divisions: [] }]
+      events: [...competition.events, { name: '', scoring: 'Points', divisions: [] }],
     });
   };
 
@@ -133,7 +158,6 @@ function SettingsPage() {
     setCompetition({ ...competition, events: updated });
   };
 
-  // ✅ Updated handleSave with Firebase attachment logic
   const handleSave = async () => {
     if (!user) {
       alert('You must be logged in to save settings.');
@@ -179,6 +203,12 @@ function SettingsPage() {
     }
   };
 
+  const tabs = [
+    'Basic', 'Branding', 'Athlete', 'Event',
+    'Rules', 'Financial', 'Legal', 'Sponsorship',
+    'Overview', 'Roster', 'Communication', 'Delete'
+  ];
+
   return (
     <DashboardLayout>
       <div className="p-6 text-white max-w-5xl mx-auto">
@@ -193,11 +223,7 @@ function SettingsPage() {
         </div>
 
         <div className="mb-6 flex flex-wrap gap-2">
-          {[
-            'Basic', 'Branding', 'Athlete', 'Event',
-            'Rules', 'Financial', 'Legal', 'Sponsorship',
-            'Overview', 'Roster', 'Communication'
-          ].map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -235,6 +261,7 @@ function SettingsPage() {
           {activeTab === 'Overview' && <OverviewTab competition={competition} />}
           {activeTab === 'Roster' && <RosterTab competitionId={router.query.id as string} />}
           {activeTab === 'Communication' && <CommunicationTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Delete' && <DeleteTab competition={competition} />}
         </div>
 
         <div className="flex justify-end mt-6">

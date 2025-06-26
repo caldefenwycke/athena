@@ -8,9 +8,10 @@ import { Timestamp } from 'firebase/firestore';
 
 interface Competition {
   id: string;
-  title: string;
-  description: string;
-  date: Timestamp; // coming from Firestore
+  title?: string;
+  name?: string;
+  description?: string;
+  date?: Timestamp; // coming from Firestore
   status: 'active' | 'past';
 }
 
@@ -92,10 +93,14 @@ export default function MyCompetitionsPage() {
               <div key={comp.id} className="bg-[#222] rounded p-4 border border-[#333]">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="text-[#00FF00] font-semibold text-lg mb-1">{comp.title}</h4>
-                    <p className="text-white text-sm mb-2">{comp.description}</p>
+                    <h4 className="text-[#00FF00] font-semibold text-lg mb-1">
+                      {comp.name || comp.title || 'Untitled Competition'}
+                    </h4>
+                    <p className="text-white text-sm mb-2">
+                      {comp.description || ''}
+                    </p>
                     <p className="text-sm text-gray-400">
-                      📅 {comp.date.toDate().toLocaleDateString()}
+                      📅 {comp.date ? comp.date.toDate().toLocaleDateString() : 'No Date Set'}
                     </p>
                   </div>
                   <Link href={`/dashboard/competition/${comp.id}/settings`}>
