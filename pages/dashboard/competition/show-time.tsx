@@ -16,7 +16,7 @@ export default function ShowTimeSelector() {
   useEffect(() => {
     const fetchCompetitions = async () => {
       if (!user) return;
-      const q = query(collection(db, 'competitions'), where('organiserId', '==', user.uid));
+      const q = query(collection(db, 'competitions'), where('organizerId', '==', user.uid));
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setCompetitions(data);
@@ -35,11 +35,10 @@ export default function ShowTimeSelector() {
 
   return (
     <DashboardLayout>
-      <h1 className="text-3xl font-bold mb-6 ml-6 mt-6">DASHBOARD</h1>
+      <h1 className="text-2xl font-bold mb-6 ml-6 mt-6">Showtime</h1>
 
       <div className="max-w-4xl mx-auto bg-[#111111] p-6 rounded-lg border border-[#2a2a2a] text-white">
-        <h2 className="text-xl font-bold mb-4">Show Time</h2>
-
+        
         <div className="flex flex-col md:flex-row items-center gap-4">
           <select
             value={selectedId}
@@ -49,7 +48,7 @@ export default function ShowTimeSelector() {
             <option value="">-- Select a Competition --</option>
             {competitions.map((comp) => (
               <option key={comp.id} value={comp.id}>
-                {comp.name}
+                {comp.name || comp.title || 'Untitled Competition'}
               </option>
             ))}
           </select>

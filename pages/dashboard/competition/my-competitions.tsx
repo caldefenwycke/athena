@@ -11,7 +11,7 @@ interface Competition {
   title?: string;
   name?: string;
   description?: string;
-  date?: Timestamp; // coming from Firestore
+  date?: Timestamp;
   status: 'active' | 'past';
 }
 
@@ -103,11 +103,18 @@ export default function MyCompetitionsPage() {
                       📅 {comp.date ? comp.date.toDate().toLocaleDateString() : 'No Date Set'}
                     </p>
                   </div>
-                  <Link href={`/dashboard/competition/${comp.id}/settings`}>
-                    <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
-                      Edit
-                    </button>
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link href={`/dashboard/competition/${comp.id}/settings`}>
+                      <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
+                        Edit
+                      </button>
+                    </Link>
+                    <Link href={`/dashboard/competition/show-time/${comp.id}`}>
+                      <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
+                        Showtime
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))

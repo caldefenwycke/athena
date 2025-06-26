@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { db, auth } from '@/lib/firebase';
 import DashboardLayout from '../../../components/layouts/DashboardLayout';
 import Modal from '../../../components/ui/Modal';
-import Link from 'next/link';
 
 export default function ManageUsers() {
   const [users, setUsers] = useState<any[]>([]);
@@ -20,6 +20,7 @@ export default function ManageUsers() {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setUsers(data);
     };
+
     fetchUsers();
   }, []);
 
@@ -29,31 +30,46 @@ export default function ManageUsers() {
     setModalOpen(true);
   };
 
-  const saveChanges = async () => {
-    if (selectedUser) {
+  const saveRoleChange = async () => {
+    if (!selectedUser) return;
+    try {
       const userRef = doc(db, 'users', selectedUser.id);
       await updateDoc(userRef, { role: newRole });
       setUsers((prev) =>
         prev.map((u) => (u.id === selectedUser.id ? { ...u, role: newRole } : u))
       );
       setModalOpen(false);
+      alert(`Role updated for ${selectedUser.email}`);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      alert('Failed to update role.');
     }
   };
 
-  const toggleAdmin = async (user: any) => {
-    const userRef = doc(db, 'users', user.id);
-    const updatedRole = user.role === 'admin' ? 'user' : 'admin';
-    await updateDoc(userRef, { role: updatedRole });
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, role: updatedRole } : u))
-    );
+  const sendResetEmail = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert(`Password reset email sent to ${email}`);
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      alert('Failed to send password reset email.');
+    }
   };
 
-  const deleteUser = async (userId: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+  const deleteUser = async (userId: string, email: string) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to permanently delete ${email}? This cannot be undone.`
+    );
     if (!confirmDelete) return;
-    await deleteDoc(doc(db, 'users', userId));
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
+
+    try {
+      await deleteDoc(doc(db, 'users', userId));
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      alert(`${email} deleted successfully.`);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user.');
+    }
   };
 
   const filteredUsers = users.filter((user) =>
@@ -63,9 +79,7 @@ export default function ManageUsers() {
   return (
     <DashboardLayout>
       <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-white">Manage Users</h1>
-        </div>
+        <h1 className="text-2xl font-bold text-white mb-4">Manage Users</h1>
 
         <input
           type="text"
@@ -82,50 +96,51 @@ export default function ManageUsers() {
               className="bg-[#1A1A1A] p-4 rounded flex flex-col md:flex-row justify-between items-start md:items-center gap-2"
             >
               <div>
-                <p className="font-semibold text-white">{user.email}</p>
-                <p className="text-sm text-gray-400">Role: {user.role}</p>
+                <p className="text-white font-semibold">
+                  {user.firstName || 'No First Name'} {user.lastName || ''}
+                </p>
+                <p className="text-gray-400 text-sm">{user.email}</p>
+                <p className="text-gray-500 text-sm">Role: {user.role}</p>
               </div>
+
               <div className="flex gap-2 flex-wrap">
-                <Link
-                  href={`/dashboard/admin/users/${user.id}`}
-                  className="bg-[#00FF00] text-black px-4 py-1 text-sm rounded"
-                >
-                  Edit
-                </Link>
                 <button
-                  onClick={() => toggleAdmin(user)}
-                  className={`px-4 py-1 text-sm rounded ${
-                    user.role === 'admin'
-                      ? 'border border-[#00FF00] text-[#00FF00]'
-                      : 'bg-[#00FF00] text-black'
-                  }`}
+                  onClick={() => openModal(user)}
+                  className="bg-[#00FF00] text-black text-sm px-3 py-1 rounded hover:bg-[#00e600]"
                 >
-                  {user.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                  Change Role
                 </button>
                 <button
-                  onClick={() => deleteUser(user.id)}
+                  onClick={() => sendResetEmail(user.email)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded"
+                >
+                  Password Reset
+                </button>
+                <button
+                  onClick={() => deleteUser(user.id, user.email)}
                   className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded"
                 >
-                  Delete
+                  Delete User
                 </button>
               </div>
             </div>
           ))}
         </div>
 
+        {/* Role Edit Modal */}
         <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-          <h2 className="text-xl font-bold mb-4">Edit User</h2>
+          <h2 className="text-xl font-bold mb-4">Edit User Role</h2>
           {selectedUser && (
             <div className="space-y-4">
               <p>
                 <strong>Email:</strong> {selectedUser.email}
               </p>
-              <label className="block">
-                <span className="text-sm text-gray-700">Role</span>
+              <label className="block text-white">
+                <span className="text-sm">Select New Role:</span>
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
-                  className="w-full p-2 border mt-1"
+                  className="w-full p-2 border mt-1 bg-black text-white"
                 >
                   <option value="athlete">Athlete</option>
                   <option value="organiser">Organiser</option>
@@ -133,7 +148,7 @@ export default function ManageUsers() {
                 </select>
               </label>
               <button
-                onClick={saveChanges}
+                onClick={saveRoleChange}
                 className="bg-[#00FF00] text-black px-4 py-2 rounded font-bold"
               >
                 Save Changes

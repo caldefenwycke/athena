@@ -1,39 +1,55 @@
-import DashboardLayout from '@/components/layouts/DashboardLayout';
+'use client';
 
-const mockCompetitions = [
-  {
-    id: '1',
-    name: 'Herm Strongest 2025',
-    location: 'Herm Island',
-    date: '2025-08-15',
-    status: 'Active',
-  },
-  {
-    id: '2',
-    name: 'Guernsey Gauntlet',
-    location: 'Guernsey',
-    date: '2025-09-10',
-    status: 'Pending',
-  },
-  {
-    id: '3',
-    name: 'Sark Showdown',
-    location: 'Sark',
-    date: '2025-10-01',
-    status: 'Suspended',
-  },
-];
+import { useEffect, useState } from 'react';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import Link from 'next/link';
+
+interface Competition {
+  id: string;
+  name?: string;
+  location?: string;
+  date?: string;
+  status?: string;
+}
 
 export default function ManageCompetitions() {
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      const snapshot = await getDocs(collection(db, 'competitions'));
+      const data = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Competition, 'id'>),
+      }));
+      setCompetitions(data);
+    };
+
+    fetchCompetitions();
+  }, []);
+
+  const deleteCompetition = async (compId: string, name?: string) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to permanently delete "${name || 'this competition'}"? This cannot be undone.`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteDoc(doc(db, 'competitions', compId));
+      setCompetitions((prev) => prev.filter((c) => c.id !== compId));
+      alert(`Competition "${name}" deleted successfully.`);
+    } catch (error) {
+      console.error('Error deleting competition:', error);
+      alert('Failed to delete competition.');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-white">Manage Competitions</h1>
-          <button className="bg-[#00FF00] text-black px-4 py-2 rounded font-semibold hover:bg-[#00cc00]">
-            Create New
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold text-white mb-6">Manage Competitions</h1>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -47,14 +63,24 @@ export default function ManageCompetitions() {
               </tr>
             </thead>
             <tbody>
-              {mockCompetitions.map((comp) => (
+              {competitions.map((comp) => (
                 <tr key={comp.id} className="border-t border-[#333] hover:bg-[#1c1c1c]">
-                  <td className="py-2">{comp.name}</td>
-                  <td className="py-2">{comp.location}</td>
-                  <td className="py-2">{comp.date}</td>
-                  <td className="py-2">{comp.status}</td>
-                  <td className="py-2">
-                    <button className="text-[#00FF00] hover:underline">View</button>
+                  <td className="py-2">{comp.name || 'Untitled Competition'}</td>
+                  <td className="py-2">{comp.location || 'N/A'}</td>
+                  <td className="py-2">{comp.date || 'No Date Set'}</td>
+                  <td className="py-2">{comp.status || 'N/A'}</td>
+                  <td className="py-2 flex gap-2">
+                    <Link href={`/dashboard/competition/${comp.id}/settings`}>
+                      <button className="bg-[#00FF00] text-black text-xs px-3 py-1 rounded hover:bg-[#00e600]">
+                        Edit
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => deleteCompetition(comp.id, comp.name)}
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
