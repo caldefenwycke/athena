@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 
 interface EventPerformance {
   event: string;
@@ -19,80 +22,60 @@ interface CompetitionResult {
 const RESULTS_PER_PAGE = 5;
 
 export default function AthleteCompetitionsPage() {
+  const { user } = useAuth();
   const [competitions, setCompetitions] = useState<CompetitionResult[]>([]);
   const [filter, setFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setCompetitions([
-      {
-        id: '1',
-        name: 'Herm Strongest 2025',
-        date: '01/07/2025',
-        totalScore: 365,
-        placement: 1,
-        events: [
-          { event: 'Deadlift Ladder', weight: 220, reps: 5 },
-          { event: 'Log Press', weight: 80, reps: 6 },
-        ],
-      },
-      {
-        id: '2',
-        name: 'Summer Strength Festival',
-        date: '12/07/2025',
-        totalScore: 410,
-        placement: 3,
-        events: [
-          { event: 'Yoke Carry', weight: 300, reps: 3 },
-          { event: 'Atlas Stones', weight: 100, reps: 5 },
-        ],
-      },
-      {
-        id: '3',
-        name: 'Winter Classic',
-        date: '10/01/2025',
-        totalScore: 390,
-        placement: 7,
-        events: [
-          { event: 'Carry Medley', weight: 250, reps: 4 },
-          { event: 'Log Press', weight: 85, reps: 5 },
-        ],
-      },
-      {
-        id: '4',
-        name: 'Island Open',
-        date: '22/04/2025',
-        totalScore: 370,
-        placement: 4,
-        events: [
-          { event: 'Frame Carry', weight: 260, reps: 3 },
-          { event: 'Stone Over Bar', weight: 110, reps: 4 },
-        ],
-      },
-      {
-        id: '5',
-        name: 'Spring Showdown',
-        date: '05/03/2025',
-        totalScore: 355,
-        placement: 10,
-        events: [
-          { event: 'Sandbag Throw', weight: 25, reps: 8 },
-          { event: 'Farmers Walk', weight: 110, reps: 6 },
-        ],
-      },
-      {
-        id: '6',
-        name: 'Highland Strength Bash',
-        date: '28/05/2025',
-        totalScore: 398,
-        placement: 12,
-        events: [
-          { event: 'Keg Toss', weight: 20, reps: 7 },
-          { event: 'Conan’s Wheel', weight: 180, reps: 5 },
-        ],
-      },
-    ]);
-  }, []);
+    if (!user) return;
+
+    const fetchCompetitions = async () => {
+      setLoading(true);
+      try {
+        const competitionsRef = collection(db, 'competitions');
+        const competitionsSnap = await getDocs(competitionsRef);
+        const athleteResults: CompetitionResult[] = [];
+
+        for (const compDoc of competitionsSnap.docs) {
+          const compId = compDoc.id;
+          const compData = compDoc.data();
+
+          // Check if athlete registered
+          const regRef = doc(db, 'competitions', compId, 'registrations', user.uid);
+          const regSnap = await getDoc(regRef);
+          if (!regSnap.exists()) continue;
+
+          // Fetch score data for athlete
+          const scoreRef = doc(db, 'competitions', compId, 'scores', user.uid);
+          const scoreSnap = await getDoc(scoreRef);
+
+          const totalScore = scoreSnap.exists() ? scoreSnap.data().totalScore || 0 : 0;
+          const placement = scoreSnap.exists() ? scoreSnap.data().placement || 0 : 0;
+          const events: EventPerformance[] = scoreSnap.exists() ? (scoreSnap.data().events || []) : [];
+
+          athleteResults.push({
+            id: compId,
+            name: compData.name || 'Unnamed Competition',
+            date: compData.date || 'Unknown Date',
+            totalScore,
+            placement,
+            events,
+          });
+        }
+
+        // Sort by date (optional: latest first)
+        athleteResults.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setCompetitions(athleteResults);
+      } catch (err) {
+        console.error('Error fetching competitions:', err);
+      }
+      setLoading(false);
+    };
+
+    fetchCompetitions();
+  }, [user]);
 
   const filtered = competitions.filter((comp) =>
     comp.name.toLowerCase().includes(filter.toLowerCase())
@@ -112,7 +95,6 @@ export default function AthleteCompetitionsPage() {
   function getPlacementLabel(place: number): string {
     const suffix = (n: number) =>
       ['st', 'nd', 'rd'][((n + 90) % 100 - 10) % 10 - 1] ?? 'th';
-
     const emoji =
       place === 1
         ? '🥇'
@@ -123,7 +105,6 @@ export default function AthleteCompetitionsPage() {
         : place <= 10
         ? '🎖️'
         : '🎗️';
-
     return `${emoji} ${place}${suffix(place)}`;
   }
 
@@ -152,7 +133,9 @@ export default function AthleteCompetitionsPage() {
           </div>
         </div>
 
-        {paginated.length === 0 ? (
+        {loading ? (
+          <p className="text-gray-400">Loading...</p>
+        ) : paginated.length === 0 ? (
           <p className="text-gray-400">No competitions found.</p>
         ) : (
           paginated.map((comp) => (

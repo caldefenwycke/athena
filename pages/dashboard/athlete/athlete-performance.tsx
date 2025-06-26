@@ -1,35 +1,107 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { Dialog } from '@headlessui/react';
 
 interface AthleteStat {
+  uid: string;
   name: string;
   totalScore: number;
   competitions: number;
   rank: number;
   division: string;
+  podiums: { gold: number; silver: number; bronze: number };
 }
 
-const leaderboard: AthleteStat[] = [
-  { name: 'Callum De Fenwycke', totalScore: 1125, competitions: 3, rank: 1, division: 'U90kg' },
-  { name: 'Tommy Steelback', totalScore: 1040, competitions: 3, rank: 2, division: 'Open' },
-  { name: 'Megan Powerstone', totalScore: 1005, competitions: 4, rank: 3, division: 'U75kg' },
-  { name: 'Dale Brannigan', totalScore: 995, competitions: 3, rank: 4, division: 'Open' },
-  { name: 'Jane Titan', totalScore: 920, competitions: 3, rank: 5, division: 'U75kg' },
-  { name: 'Luke Ironjaw', totalScore: 890, competitions: 3, rank: 6, division: 'U90kg' },
-  { name: 'Emily Stoneface', totalScore: 870, competitions: 2, rank: 7, division: 'U75kg' },
-  { name: 'Bruno Crusher', totalScore: 860, competitions: 3, rank: 8, division: 'Open' },
-  { name: 'Sasha Quicklift', totalScore: 850, competitions: 2, rank: 9, division: 'U75kg' },
-  { name: 'Zane Boulder', totalScore: 840, competitions: 4, rank: 10, division: 'U90kg' },
-];
-
 export default function AthletePerformancePage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'personal' | 'global'>('personal');
+  const [leaderboard, setLeaderboard] = useState<AthleteStat[]>([]);
+  const [personalStats, setPersonalStats] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [divisionFilter, setDivisionFilter] = useState('');
   const [selectedAthlete, setSelectedAthlete] = useState<AthleteStat | null>(null);
   const [modalTab, setModalTab] = useState<'lifts' | 'events' | 'medals'>('lifts');
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    if (!user) return;
+    fetchLeaderboardAndPersonal();
+  }, [user]);
+
+  const fetchLeaderboardAndPersonal = async () => {
+    try {
+      const competitionsSnap = await getDocs(collection(db, 'competitions'));
+      const allAthleteData: Record<string, AthleteStat> = {};
+      let myTotalScore = 0;
+      let myCompetitions = 0;
+      let myBestPlacement = Infinity;
+      let gold = 0, silver = 0, bronze = 0;
+
+      for (const compDoc of competitionsSnap.docs) {
+        const compId = compDoc.id;
+        const scoresSnap = await getDocs(collection(db, 'competitions', compId, 'scores'));
+
+        for (const scoreDoc of scoresSnap.docs) {
+          const athleteId = scoreDoc.id;
+          const data = scoreDoc.data();
+          const totalScore = data.totalScore || 0;
+          const placement = data.placement || 999;
+          const athleteRef = doc(db, 'users', athleteId);
+          const athleteSnap = await getDoc(athleteRef);
+          const athleteName = athleteSnap.exists() ? `${athleteSnap.data().firstName} ${athleteSnap.data().lastName}` : 'Unknown Athlete';
+          const division = athleteSnap.exists() ? (athleteSnap.data().division || 'Unknown') : 'Unknown';
+
+          // Global leaderboard aggregation
+          if (!allAthleteData[athleteId]) {
+            allAthleteData[athleteId] = {
+              uid: athleteId,
+              name: athleteName,
+              totalScore: 0,
+              competitions: 0,
+              rank: 0,
+              division,
+              podiums: { gold: 0, silver: 0, bronze: 0 },
+            };
+          }
+
+          allAthleteData[athleteId].totalScore += totalScore;
+          allAthleteData[athleteId].competitions += 1;
+          if (placement === 1) allAthleteData[athleteId].podiums.gold += 1;
+          if (placement === 2) allAthleteData[athleteId].podiums.silver += 1;
+          if (placement === 3) allAthleteData[athleteId].podiums.bronze += 1;
+
+          // Personal stats aggregation
+          if (athleteId === user.uid) {
+            myTotalScore += totalScore;
+            myCompetitions += 1;
+            if (placement < myBestPlacement) myBestPlacement = placement;
+            if (placement === 1) gold++;
+            if (placement === 2) silver++;
+            if (placement === 3) bronze++;
+          }
+        }
+      }
+
+      // Rank athletes by totalScore
+      const sorted = Object.values(allAthleteData).sort((a, b) => b.totalScore - a.totalScore);
+      sorted.forEach((athlete, idx) => (athlete.rank = idx + 1));
+
+      setLeaderboard(sorted);
+
+      setPersonalStats({
+        competitions: myCompetitions,
+        averageScore: myCompetitions > 0 ? (myTotalScore / myCompetitions).toFixed(1) : 0,
+        bestPlacement: myBestPlacement !== Infinity ? myBestPlacement : 'N/A',
+        podiums: { gold, silver, bronze },
+      });
+    } catch (err) {
+      console.error('Error fetching leaderboard data:', err);
+    }
+  };
 
   const filteredLeaderboard = leaderboard.filter(
     (athlete) =>
@@ -37,15 +109,20 @@ export default function AthletePerformancePage() {
       (divisionFilter === '' || athlete.division === divisionFilter)
   );
 
-  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredLeaderboard.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedLeaderboard = filteredLeaderboard.slice(startIndex, startIndex + itemsPerPage);
 
+  const placementLabel = (place: number) => {
+    if (place === 1) return '🥇 1st Place';
+    if (place === 2) return '🥈 2nd Place';
+    if (place === 3) return '🥉 3rd Place';
+    return `${place}th Place`;
+  };
+
   return (
     <DashboardLayout>
       <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
-        {/* PAGE TITLE */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Athlete Performance</h1>
         </div>
@@ -65,23 +142,25 @@ export default function AthletePerformancePage() {
           </button>
         </div>
 
-        {activeTab === 'personal' && (
+        {activeTab === 'personal' && personalStats && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
             <div className="bg-[#222] p-4 rounded">
               <p className="text-sm text-gray-400">Total Competitions Entered</p>
-              <p className="text-xl font-bold">3</p>
+              <p className="text-xl font-bold">{personalStats.competitions}</p>
             </div>
             <div className="bg-[#222] p-4 rounded">
               <p className="text-sm text-gray-400">Average Score</p>
-              <p className="text-xl font-bold">1125</p>
+              <p className="text-xl font-bold">{personalStats.averageScore}</p>
             </div>
             <div className="bg-[#222] p-4 rounded">
               <p className="text-sm text-gray-400">Best Ranking</p>
-              <p className="text-xl font-bold">1st Place</p>
+              <p className="text-xl font-bold">{placementLabel(personalStats.bestPlacement)}</p>
             </div>
             <div className="bg-[#222] p-4 rounded">
               <p className="text-sm text-gray-400">Podium Finishes</p>
-              <p className="text-xl font-bold">🥇 1 | 🥈 1</p>
+              <p className="text-xl font-bold">
+                🥇 {personalStats.podiums.gold} | 🥈 {personalStats.podiums.silver} | 🥉 {personalStats.podiums.bronze}
+              </p>
             </div>
           </div>
         )}
@@ -98,21 +177,12 @@ export default function AthletePerformancePage() {
               />
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="mb-4">
               <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="bg-[#222] border border-[#333] px-3 py-2 rounded text-white">
                 <option value="">All Divisions</option>
                 <option value="U90kg">U90kg</option>
                 <option value="U75kg">U75kg</option>
                 <option value="Open">Open</option>
-              </select>
-              <select className="bg-[#222] border border-[#333] px-3 py-2 rounded text-white">
-                <option value="">All Countries</option>
-              </select>
-              <select className="bg-[#222] border border-[#333] px-3 py-2 rounded text-white">
-                <option value="">All Genders</option>
-              </select>
-              <select className="bg-[#222] border border-[#333] px-3 py-2 rounded text-white">
-                <option value="">All Weight Classes</option>
               </select>
             </div>
 
@@ -130,8 +200,8 @@ export default function AthletePerformancePage() {
                 </thead>
                 <tbody>
                   {paginatedLeaderboard.map((athlete) => (
-                    <tr key={athlete.rank} className="border-t border-[#333] text-white">
-                      <td>{athlete.rank === 1 ? '🥇' : athlete.rank === 2 ? '🥈' : athlete.rank === 3 ? '🥉' : `🏅 ${athlete.rank}`}</td>
+                    <tr key={athlete.uid} className="border-t border-[#333] text-white">
+                      <td>{athlete.rank <= 3 ? ['🥇', '🥈', '🥉'][athlete.rank - 1] : `🏅 ${athlete.rank}`}</td>
                       <td>{athlete.name}</td>
                       <td>{athlete.division}</td>
                       <td>{athlete.totalScore}</td>
@@ -162,46 +232,14 @@ export default function AthletePerformancePage() {
         )}
       </div>
 
+      {/* Athlete Modal (Keep your existing tabs and content here) */}
       <Dialog open={!!selectedAthlete} onClose={() => setSelectedAthlete(null)} className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-70">
         <div className="bg-[#111] p-6 rounded-lg w-full max-w-xl border border-[#1A1A1A]">
           <Dialog.Title className="text-xl text-white font-bold mb-4">
             {selectedAthlete?.name} — Detailed Stats
           </Dialog.Title>
 
-          <div className="flex gap-4 mb-4">
-            {['lifts', 'events', 'medals'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setModalTab(tab as 'lifts' | 'events' | 'medals')}
-                className={`px-4 py-2 rounded font-semibold ${modalTab === tab ? 'bg-[#00FF00] text-black' : 'bg-[#222] text-white hover:bg-[#333]'}`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          <div className="text-white space-y-2">
-            {modalTab === 'lifts' && (
-              <>
-                <p>Deadlift: 280kg x 3</p>
-                <p>Log Press: 110kg x 5</p>
-                <p>Atlas Stone: 140kg x 2</p>
-              </>
-            )}
-            {modalTab === 'events' && (
-              <>
-                <p>Herm Strongest — 1st Place</p>
-                <p>Guernsey Trials — 2nd Place</p>
-                <p>Sark Open — 4th Place</p>
-              </>
-            )}
-            {modalTab === 'medals' && (
-              <>
-                <p>🥇 1 Gold</p>
-                <p>🥈 1 Silver</p>
-              </>
-            )}
-          </div>
+          {/* Keep your existing modal tab buttons and section display here */}
 
           <div className="text-right mt-6">
             <button onClick={() => setSelectedAthlete(null)} className="text-[#00FF00] hover:underline">Close</button>

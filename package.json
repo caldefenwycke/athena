@@ -7,7 +7,10 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@headlessui/react": "^2.2.4",
+    "@mui/material": "^7.1.2",
     "classnames": "^2.5.1",
     "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
@@ -15,7 +18,9 @@
     "next": "^14.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-firebase-hooks": "^5.1.1"
+    "react-easy-crop": "^5.4.2",
+    "react-firebase-hooks": "^5.1.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
