@@ -1,20 +1,20 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import AuthModal from '@/components/ui/AuthModal';
+import { useEffect, useState } from 'react';
 
-const BYPASS_AUTH = false; // ✅ Must be false to enforce real authentication
+const BYPASS_AUTH = false;
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (!loading && !user && !BYPASS_AUTH) {
+      setShowModal(true);
     }
-  }, [user, loading, router]);
+  }, [user, loading]);
 
   if (loading) {
     return (
@@ -24,6 +24,15 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  return <>{user ? children : null}</>;
+  return (
+    <>
+      {user && children}
+      {!user && showModal && (
+        <AuthModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+    </>
+  );
 }
-
