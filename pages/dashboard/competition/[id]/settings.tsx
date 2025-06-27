@@ -21,6 +21,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { logSystemEvent } from '@/lib/logSystemEvent';
 
 type CompetitionType = {
   name: string;
@@ -54,7 +55,7 @@ type CompetitionType = {
   organizerPhone: string;
   autoReplyMessage: string;
   attachments: File[];
-  status?: string; // ✅ Added in case needed for Delete tab logic
+  status?: string;
 };
 
 function SettingsPage() {
@@ -195,6 +196,13 @@ function SettingsPage() {
       delete competitionData.imageFile;
 
       await setDoc(doc(db, 'competitions', compId), competitionData, { merge: true });
+
+      await logSystemEvent({
+        action: 'Competition Settings Updated',
+        performedBy: user.uid,
+        competitionId: compId,
+        details: `Competition settings updated for "${competition.name}"`,
+      });
 
       alert('Settings saved successfully!');
     } catch (error) {

@@ -19,6 +19,7 @@ interface Competition {
 export default function ManageCompetitions() {
   const { user } = useAuth();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchCompetitions = async () => {
@@ -49,6 +50,7 @@ export default function ManageCompetitions() {
       await logSystemEvent({
         action: 'Competition Deleted',
         performedBy: user.uid,
+        performedByEmail: user.email,
         competitionId: compId,
         details: `Deleted competition "${name}"`,
       });
@@ -58,10 +60,22 @@ export default function ManageCompetitions() {
     }
   };
 
+  const filteredCompetitions = competitions.filter((comp) =>
+    comp.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <DashboardLayout>
       <div className="bg-[#111] border border-[#1A1A1A] rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-white mb-6">Manage Competitions</h1>
+        <h1 className="text-2xl font-bold text-white mb-4">Manage Competitions</h1>
+
+        <input
+          type="text"
+          placeholder="Search competitions..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-2 mb-6 rounded bg-[#222] text-white border border-[#333]"
+        />
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -75,7 +89,7 @@ export default function ManageCompetitions() {
               </tr>
             </thead>
             <tbody>
-              {competitions.map((comp) => (
+              {filteredCompetitions.map((comp) => (
                 <tr key={comp.id} className="border-t border-[#333] hover:bg-[#1c1c1c]">
                   <td className="py-2">{comp.name || 'Untitled Competition'}</td>
                   <td className="py-2">{comp.location || 'N/A'}</td>
@@ -103,3 +117,4 @@ export default function ManageCompetitions() {
     </DashboardLayout>
   );
 }
+

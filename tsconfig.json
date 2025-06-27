@@ -16,8 +16,10 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./*"],
+      "@lib/*": ["./lib/*"]
+    },
+    "types": ["node"]  // ✅ Important for Next.js API routes & firebase-admin
   },
   "include": [
     "next-env.d.ts",
@@ -28,3 +30,6 @@
     "node_modules"
   ]
 }
+
+
+

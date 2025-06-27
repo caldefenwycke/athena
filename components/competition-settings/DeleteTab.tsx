@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { logSystemEvent } from '@/lib/logSystemEvent';
 
 interface DeleteTabProps {
   competition: any;
@@ -10,6 +12,7 @@ interface DeleteTabProps {
 
 export default function DeleteTab({ competition }: DeleteTabProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +36,19 @@ export default function DeleteTab({ competition }: DeleteTabProps) {
     try {
       setLoading(true);
       const compId = router.query.id as string;
+
       await deleteCompetitionAndSubcollections(compId);
+
+      // ✅ Log the deletion
+      if (user) {
+        await logSystemEvent({
+          action: 'Competition Deleted',
+          performedBy: user.uid,
+          competitionId: compId,
+          details: `Deleted competition "${competition.name}"`,
+        });
+      }
+
       alert('Competition and all related data deleted successfully.');
       router.push('/dashboard/competition/my-competitions');
     } catch (error) {
@@ -89,3 +104,4 @@ export default function DeleteTab({ competition }: DeleteTabProps) {
     </div>
   );
 }
+

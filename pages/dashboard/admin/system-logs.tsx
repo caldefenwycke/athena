@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 
@@ -9,7 +9,9 @@ interface LogEntry {
   id: string;
   action: string;
   performedBy: string;
+  performedByEmail?: string;
   targetUser?: string;
+  targetUserEmail?: string;
   competitionId?: string;
   details?: string;
   timestamp?: any;
@@ -32,7 +34,35 @@ export default function SystemLogsPage() {
         id: doc.id,
         ...(doc.data() as Omit<LogEntry, 'id'>),
       }));
-      setLogs(data);
+
+      const userUids = new Set<string>();
+      data.forEach((log) => {
+        if (log.performedBy) userUids.add(log.performedBy);
+        if (log.targetUser) userUids.add(log.targetUser);
+      });
+
+      const userMap: Record<string, string> = {};
+      await Promise.all(
+        Array.from(userUids).map(async (uid) => {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', uid));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              userMap[uid] = userData.email || '(unknown)';
+            }
+          } catch (error) {
+            console.error(`Failed to fetch user for UID ${uid}`, error);
+          }
+        })
+      );
+
+      const logsWithEmails = data.map((log) => ({
+        ...log,
+        performedByEmail: userMap[log.performedBy] || log.performedBy,
+        targetUserEmail: log.targetUser ? userMap[log.targetUser] || log.targetUser : '',
+      }));
+
+      setLogs(logsWithEmails);
     };
 
     fetchLogs();
@@ -43,8 +73,8 @@ export default function SystemLogsPage() {
   const filteredLogs = logs.filter((log) => {
     const matchesSearch =
       log.action.toLowerCase().includes(search.toLowerCase()) ||
-      log.performedBy.toLowerCase().includes(search.toLowerCase()) ||
-      (log.targetUser && log.targetUser.toLowerCase().includes(search.toLowerCase())) ||
+      (log.performedByEmail && log.performedByEmail.toLowerCase().includes(search.toLowerCase())) ||
+      (log.targetUserEmail && log.targetUserEmail.toLowerCase().includes(search.toLowerCase())) ||
       (log.competitionId && log.competitionId.toLowerCase().includes(search.toLowerCase())) ||
       (log.details && log.details.toLowerCase().includes(search.toLowerCase()));
 
@@ -67,8 +97,8 @@ export default function SystemLogsPage() {
     const rows = filteredLogs.map((log) => [
       log.timestamp?.toDate ? log.timestamp.toDate().toISOString() : '',
       log.action,
-      log.performedBy,
-      log.targetUser || '',
+      log.performedByEmail,
+      log.targetUserEmail || '',
       log.competitionId || '',
       log.details || '',
     ]);
@@ -142,36 +172,38 @@ export default function SystemLogsPage() {
           Export Logs to CSV
         </button>
 
-        {/* Log Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="text-[#00FF00] border-b border-[#333]">
-                <th className="py-2">Timestamp</th>
-                <th className="py-2">Action</th>
-                <th className="py-2">Performed By</th>
-                <th className="py-2">Target User</th>
-                <th className="py-2">Competition</th>
-                <th className="py-2">Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentLogs.map((log) => (
-                <tr key={log.id} className="border-t border-[#333] hover:bg-[#1c1c1c]">
-                  <td className="py-2">
-                    {log.timestamp?.toDate
-                      ? log.timestamp.toDate().toLocaleString()
-                      : 'Pending'}
-                  </td>
-                  <td className="py-2">{log.action}</td>
-                  <td className="py-2">{log.performedBy}</td>
-                  <td className="py-2">{log.targetUser || '-'}</td>
-                  <td className="py-2">{log.competitionId || '-'}</td>
-                  <td className="py-2">{log.details || '-'}</td>
+        {/* Scrollable Table Container */}
+        <div className="w-full overflow-x-auto border border-[#333] rounded">
+          <div style={{ minWidth: '1100px' }}>
+            <table className="table-auto text-sm">
+              <thead>
+                <tr className="text-[#00FF00] border-b border-[#333]">
+                  <th className="px-4 py-2">Timestamp</th>
+                  <th className="px-4 py-2">Action</th>
+                  <th className="px-4 py-2">Performed By</th>
+                  <th className="px-4 py-2">Target User</th>
+                  <th className="px-4 py-2">Competition</th>
+                  <th className="px-4 py-2">Details</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentLogs.map((log) => (
+                  <tr key={log.id} className="border-t border-[#333] hover:bg-[#1c1c1c]">
+                    <td className="px-4 py-2">
+                      {log.timestamp?.toDate
+                        ? log.timestamp.toDate().toLocaleString()
+                        : 'Pending'}
+                    </td>
+                    <td className="px-4 py-2">{log.action}</td>
+                    <td className="px-4 py-2">{log.performedByEmail}</td>
+                    <td className="px-4 py-2">{log.targetUserEmail || '-'}</td>
+                    <td className="px-4 py-2">{log.competitionId || '-'}</td>
+                    <td className="px-4 py-2">{log.details}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {filteredLogs.length === 0 && (
@@ -214,3 +246,8 @@ export default function SystemLogsPage() {
     </DashboardLayout>
   );
 }
+
+
+
+
+

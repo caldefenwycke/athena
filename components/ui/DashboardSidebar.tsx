@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { User, Trophy, Shield } from 'lucide-react'; // Add icons
+import { User, Trophy, Shield } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface MenuItem {
   id: string;
@@ -15,44 +16,50 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-const menuSections: MenuSection[] = [
-  {
-    id: 'athlete',
-    title: 'Athlete',
-    icon: <User className="w-5 h-5 mr-2" />,
-    items: [
-      { id: 'profile', label: 'Profile', path: '/dashboard/athlete/profile' },
-      { id: 'bio', label: 'Bio', path: '/dashboard/athlete/bio' },
-      { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete/athlete-competitions' },
-      { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete/athlete-performance' },
-    ],
-  },
-  {
-    id: 'competition',
-    title: 'Competition',
-    icon: <Trophy className="w-5 h-5 mr-2" />,
-    items: [
-      { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
-      { id: 'show-time', label: 'Show Time', path: '/dashboard/competition/show-time' },
-    ],
-  },
-  {
-    id: 'admin',
-    title: 'Admin',
-    icon: <Shield className="w-5 h-5 mr-2" />,
-    items: [
-      { id: 'manage-users', label: 'Manage Users', path: '/dashboard/admin/manage-users' },
-      { id: 'manage-competitions', label: 'Manage Competitions', path: '/dashboard/admin/manage-competitions' },
-      { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' },
-    ],
-  },
-];
-
 export default function DashboardSidebar() {
   const router = useRouter();
+  const { user } = useAuth();
 
-  const activeSection = menuSections.find(section =>
-    section.items.some(item => router.pathname === item.path)
+  const menuSections: MenuSection[] = [
+    {
+      id: 'athlete',
+      title: 'Athlete',
+      icon: <User className="w-5 h-5 mr-2" />,
+      items: [
+        { id: 'profile', label: 'Profile', path: '/dashboard/athlete/profile' },
+        { id: 'bio', label: 'Bio', path: '/dashboard/athlete/bio' },
+        { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete/athlete-competitions' },
+        { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete/athlete-performance' },
+      ],
+    },
+    {
+      id: 'competition',
+      title: 'Competition',
+      icon: <Trophy className="w-5 h-5 mr-2" />,
+      items: [
+        { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
+        { id: 'show-time', label: 'Show Time', path: '/dashboard/competition/show-time' },
+      ],
+    },
+    // ✅ Only include Admin section if user role is admin
+    ...(user?.role === 'admin'
+      ? [
+          {
+            id: 'admin',
+            title: 'Admin',
+            icon: <Shield className="w-5 h-5 mr-2" />,
+            items: [
+              { id: 'manage-users', label: 'Manage Users', path: '/dashboard/admin/manage-users' },
+              { id: 'manage-competitions', label: 'Manage Comps', path: '/dashboard/admin/manage-competitions' },
+              { id: 'system-logs', label: 'System Logs', path: '/dashboard/admin/system-logs' },
+            ],
+          },
+        ]
+      : []),
+  ];
+
+  const activeSection = menuSections.find((section) =>
+    section.items.some((item) => router.pathname === item.path)
   );
 
   return (
@@ -99,3 +106,4 @@ export default function DashboardSidebar() {
     </div>
   );
 }
+

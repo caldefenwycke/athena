@@ -4,7 +4,9 @@ import { db } from './firebase';
 interface LogEntry {
   action: string;
   performedBy: string;
+  performedByEmail?: string;
   targetUser?: string;
+  targetUserEmail?: string;
   competitionId?: string;
   details?: string;
 }
@@ -19,3 +21,4 @@ export const logSystemEvent = async (log: LogEntry) => {
     console.error('Error writing system log:', error);
   }
 };
+

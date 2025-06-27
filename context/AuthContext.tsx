@@ -1,22 +1,29 @@
 // context/AuthContext.tsx
+'use client';
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/router';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 const db = getFirestore();
 
+interface ExtendedUser extends FirebaseUser {
+  role: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+}
+
 interface AuthContextType {
-  user: User | null;
-  role: string | null;
+  user: ExtendedUser | null;
   loading: boolean;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  role: null,
   loading: true,
   logout: async () => {},
 });
@@ -26,33 +33,49 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            setRole(userData.role || null);
+
+            const extendedUser: ExtendedUser = {
+              ...firebaseUser,
+              role: userData.role || 'athlete', // default fallback
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: firebaseUser.email || '',
+            };
+
+            setUser(extendedUser);
           } else {
-            setRole(null);
+            console.warn('No Firestore user doc found for:', firebaseUser.uid);
+            setUser({
+              ...firebaseUser,
+              role: 'athlete',
+              email: firebaseUser.email || '',
+            } as ExtendedUser);
           }
         } catch (error) {
-          console.error('Error fetching user role:', error);
-          setRole(null);
+          console.error('Error fetching Firestore user:', error);
+          setUser({
+            ...firebaseUser,
+            role: 'athlete',
+            email: firebaseUser.email || '',
+          } as ExtendedUser);
         }
       } else {
         setUser(null);
-        setRole(null);
       }
 
-      setLoading(false); // ✅ Always clear loading after checking auth
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -61,14 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await signOut(auth);
     setUser(null);
-    setRole(null);
     setLoading(false);
     router.push('/');
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 }
+

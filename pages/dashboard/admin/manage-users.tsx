@@ -47,7 +47,9 @@ export default function ManageUsers() {
       await logSystemEvent({
         action: 'Role Changed',
         performedBy: user.uid,
+        performedByEmail: user.email,
         targetUser: selectedUser.id,
+        targetUserEmail: selectedUser.email,
         details: `Role changed to ${newRole}`,
       });
     } catch (error) {
@@ -57,8 +59,16 @@ export default function ManageUsers() {
   };
 
   const sendResetEmail = async (email: string) => {
+    if (!user) return;
     try {
       await sendPasswordResetEmail(auth, email);
+      await logSystemEvent({
+        action: 'Password Reset Email Sent',
+        performedBy: user.uid,
+        performedByEmail: user.email,
+        targetUserEmail: email,
+        details: `Password reset email sent to ${email}`,
+      });
       alert(`Password reset email sent to ${email}`);
     } catch (error) {
       console.error('Error sending password reset:', error);
@@ -76,13 +86,22 @@ export default function ManageUsers() {
 
     try {
       await deleteDoc(doc(db, 'users', userId));
+
+      await fetch('/api/admin/deleteUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUid: userId }),
+      });
+
       setUsers((prev) => prev.filter((u) => u.id !== userId));
       alert(`${email} deleted successfully.`);
 
       await logSystemEvent({
         action: 'User Deleted',
         performedBy: user.uid,
+        performedByEmail: user.email,
         targetUser: userId,
+        targetUserEmail: email,
         details: `Deleted user ${email}`,
       });
     } catch (error) {
@@ -179,3 +198,5 @@ export default function ManageUsers() {
     </DashboardLayout>
   );
 }
+
+

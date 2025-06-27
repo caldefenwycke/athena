@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { logSystemEvent } from '@/lib/logSystemEvent';
 
 export default function Register() {
   const router = useRouter();
@@ -22,6 +23,14 @@ export default function Register() {
       await setDoc(doc(db, 'users', user.uid), {
         role: 'athlete', // default role
         email: user.email,
+      });
+
+      // ✅ Log User Created
+      await logSystemEvent({
+        action: 'User Created',
+        performedBy: user.uid,
+        targetUser: user.uid,
+        details: `New user account created for ${user.email}`,
       });
 
       router.push('/dashboard');
@@ -58,3 +67,4 @@ export default function Register() {
     </div>
   );
 }
+

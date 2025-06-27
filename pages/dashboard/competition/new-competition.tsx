@@ -1,9 +1,12 @@
+'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
+import { logSystemEvent } from '@/lib/logSystemEvent';
 
 export default function NewCompetition() {
   const [name, setName] = useState('');
@@ -16,14 +19,27 @@ export default function NewCompetition() {
       return;
     }
 
-    const docRef = await addDoc(collection(db, 'competitions'), {
-      name: name,
-      status: 'active',
-      organizerId: user.uid,
-      createdAt: Timestamp.now(),
-    });
+    try {
+      const docRef = await addDoc(collection(db, 'competitions'), {
+        name: name,
+        status: 'active',
+        organizerId: user.uid,
+        createdAt: Timestamp.now(),
+      });
 
-    router.push(`/dashboard/competition/${docRef.id}/settings`);
+      await logSystemEvent({
+        action: 'Competition Created',
+        performedBy: user.uid,
+        performedByEmail: user.email,
+        competitionId: docRef.id,
+        details: `Competition "${name}" created by ${user.email}`,
+      });
+
+      router.push(`/dashboard/competition/${docRef.id}/settings`);
+    } catch (error) {
+      console.error('Error creating competition:', error);
+      alert('Failed to create competition. Please try again.');
+    }
   };
 
   return (
@@ -47,3 +63,4 @@ export default function NewCompetition() {
     </DashboardLayout>
   );
 }
+
