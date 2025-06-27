@@ -53,8 +53,10 @@ export default function HomePage() {
       </Head>
       <div className="min-h-screen bg-black text-white">
         <main className="max-w-7xl mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold mb-2">
+
+          {/* Hero Section */}
+          <div className="text-center mb-20 py-12 bg-black rounded-lg">
+            <h1 className="text-8xl font mb-4 leading-tight">
               <span className="text-[#00FF00]">ATH</span>ENA
             </h1>
             <p className="text-lg text-gray-400 mb-2 tracking-wider">ATHLETE ARENA</p>
@@ -66,7 +68,7 @@ export default function HomePage() {
                 placeholder="Search competitions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-6 py-3 bg-[#111] border border-[#222] rounded-lg text-white focus:outline-none focus:border-[#00FF00]"
+                className="w-full px-6 py-3 bg-black border border-[#222] rounded-lg text-white focus:outline-none focus:border-[#00FF00]"
               />
               <button className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#00FF00]">
                 <i className="fas fa-search"></i>
@@ -74,7 +76,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-center mb-6">UPCOMING COMPETITIONS</h2>
+          {/* Upcoming Competitions Section */}
+          <h2 className="text-2xl font-bold text-center mt-20 mb-6">UPCOMING COMPETITIONS</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {competitions.map((competition) => (
               <div
@@ -108,3 +112,4 @@ export default function HomePage() {
     </>
   );
 }
+
