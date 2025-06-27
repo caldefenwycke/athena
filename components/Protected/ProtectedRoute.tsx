@@ -1,17 +1,14 @@
+'use client';
+
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
-const BYPASS_AUTH = true; // 🔧 Set to false to enforce real auth
+const BYPASS_AUTH = false; // ✅ Must be false to enforce real authentication
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-
-  // ✅ Temporary bypass for development purposes
-  if (BYPASS_AUTH) {
-    return <>{children}</>;
-  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -22,10 +19,11 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white text-lg">
-        Loading...
+        Checking authentication...
       </div>
     );
   }
 
   return <>{user ? children : null}</>;
 }
+

@@ -1,12 +1,20 @@
+'use client';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-export default function DashboardIndex() {
+export default function DashboardHome() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/dashboard/athlete/profile');
+    router.push('/dashboard/athlete/profile');
   }, [router]);
 
-  return null;
+  return (
+    <DashboardLayout>
+      <p className="text-white">Redirecting to your Athlete Profile...</p>
+    </DashboardLayout>
+  );
 }
+

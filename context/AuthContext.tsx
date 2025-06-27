@@ -1,4 +1,3 @@
-// context/AuthContext.tsx
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -18,12 +17,14 @@ interface ExtendedUser extends FirebaseUser {
 
 interface AuthContextType {
   user: ExtendedUser | null;
+  role: string | null;
   loading: boolean;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  role: null,
   loading: true,
   logout: async () => {},
 });
@@ -34,6 +35,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -48,13 +50,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const extendedUser: ExtendedUser = {
               ...firebaseUser,
-              role: userData.role || 'athlete', // default fallback
+              role: userData.role || 'athlete',
               firstName: userData.firstName || '',
               lastName: userData.lastName || '',
               email: firebaseUser.email || '',
             };
 
             setUser(extendedUser);
+            setRole(userData.role || 'athlete');
           } else {
             console.warn('No Firestore user doc found for:', firebaseUser.uid);
             setUser({
@@ -62,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               role: 'athlete',
               email: firebaseUser.email || '',
             } as ExtendedUser);
+            setRole('athlete');
           }
         } catch (error) {
           console.error('Error fetching Firestore user:', error);
@@ -70,9 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: 'athlete',
             email: firebaseUser.email || '',
           } as ExtendedUser);
+          setRole('athlete');
         }
       } else {
         setUser(null);
+        setRole(null);
       }
 
       setLoading(false);
@@ -84,14 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await signOut(auth);
     setUser(null);
+    setRole(null);
     setLoading(false);
     router.push('/');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, role, loading, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 }
+
 
