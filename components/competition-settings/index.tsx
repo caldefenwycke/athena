@@ -9,3 +9,4 @@ export { default as SponsorshipTab } from './SponsorshipTab';
 export { default as OverviewTab } from './OverviewTab';
 export { default as CommunicationTab } from './CommunicationTab';
 export { default as RosterTab } from './AthleteRosterTab';
+export { default as DivisionsTab } from './DivisionsTab';

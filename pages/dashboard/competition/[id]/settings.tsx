@@ -12,58 +12,24 @@ import {
   FinancialTab,
   LegalTab,
   SponsorshipTab,
+  DivisionsTab,
 } from '@/components/competition-settings';
 import OverviewTab from '@/components/competition-settings/OverviewTab';
 import RosterTab from '@/components/competition-settings/AthleteRosterTab';
 import CommunicationTab from '@/components/competition-settings/CommunicationTab';
 import DeleteTab from '@/components/competition-settings/DeleteTab';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { logSystemEvent } from '@/lib/logSystemEvent';
-
-type CompetitionType = {
-  name: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  image: string;
-  imageFile: File | null;
-  registrationCloseDate: string;
-  maxAthletes: number;
-  requireTshirtSize: boolean;
-  requireWeightHeight: boolean;
-  events: any[];
-  sanctioningBody: string;
-  tieBreakerRule: string;
-  rulesDoc: string;
-  registrationCost: number;
-  prizePurse: number;
-  extraTshirtOption: boolean;
-  waiverType: 'athena' | 'custom';
-  customWaiver: string;
-  useTemplateWaiver: boolean;
-  sponsorName: string;
-  sponsorLogo: string;
-  directMessagingEnabled: boolean;
-  groupMessagingEnabled: boolean;
-  divisionMessagingEnabled: boolean;
-  pinnedNotice: string;
-  mcAnnouncements: string;
-  organizerEmail: string;
-  organizerPhone: string;
-  autoReplyMessage: string;
-  attachments: File[];
-  status?: string;
-};
 
 function SettingsPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('Basic');
 
-  const [competition, setCompetition] = useState<CompetitionType>({
+  const [competition, setCompetition] = useState<any>({
     name: '',
     location: '',
     startDate: '',
@@ -95,6 +61,7 @@ function SettingsPage() {
     organizerPhone: '',
     autoReplyMessage: '',
     attachments: [],
+    divisions: [],
   });
 
   useEffect(() => {
@@ -107,9 +74,12 @@ function SettingsPage() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setCompetition((prev) => ({
+          const data = docSnap.data();
+          setCompetition((prev: any) => ({
             ...prev,
-            ...docSnap.data(),
+            ...data,
+            startDate: data.startDate instanceof Timestamp ? data.startDate.toDate().toISOString().slice(0, 10) : data.startDate,
+            endDate: data.endDate instanceof Timestamp ? data.endDate.toDate().toISOString().slice(0, 10) : data.endDate,
           }));
         }
       } catch (error) {
@@ -167,17 +137,10 @@ function SettingsPage() {
 
     try {
       const compId = router.query.id as string;
-      let imageUrl = competition.image;
-
-      if (competition.imageFile) {
-        const imageRef = ref(storage, `competitionImages/${compId}`);
-        await uploadBytes(imageRef, competition.imageFile);
-        imageUrl = await getDownloadURL(imageRef);
-      }
 
       let attachmentUrls: string[] = [];
       if (competition.attachments && competition.attachments.length > 0) {
-        const uploadPromises = competition.attachments.map(async (file) => {
+        const uploadPromises = competition.attachments.map(async (file: any) => {
           const fileRef = ref(storage, `messageAttachments/${compId}/${file.name}`);
           await uploadBytes(fileRef, file);
           return await getDownloadURL(fileRef);
@@ -185,9 +148,39 @@ function SettingsPage() {
         attachmentUrls = await Promise.all(uploadPromises);
       }
 
+      let startDateTimestamp = null;
+      if (competition.startDate && !isNaN(new Date(competition.startDate).getTime())) {
+        startDateTimestamp = Timestamp.fromDate(new Date(competition.startDate));
+      }
+
+      let endDateTimestamp = null;
+      if (competition.endDate && !isNaN(new Date(competition.endDate).getTime())) {
+        endDateTimestamp = Timestamp.fromDate(new Date(competition.endDate));
+      }
+
+      if (!competition.name || !startDateTimestamp) {
+        alert('Competition name and a valid start date are required before saving.');
+        return;
+      }
+
+      const today = new Date();
+      let status = 'active';
+      if (endDateTimestamp) {
+        const eventEndDate = endDateTimestamp.toDate();
+        const eventEndPlusOne = new Date(eventEndDate);
+        eventEndPlusOne.setDate(eventEndPlusOne.getDate() + 1);
+        if (today >= eventEndPlusOne) {
+          status = 'completed';
+        }
+      }
+
       const competitionData = {
         ...competition,
-        image: imageUrl,
+        name: competition.name,
+        description: competition.location,
+        startDate: startDateTimestamp,
+        endDate: endDateTimestamp,
+        status: status,
         attachments: attachmentUrls,
         organizerId: user.uid,
         updatedAt: new Date().toISOString(),
@@ -207,14 +200,14 @@ function SettingsPage() {
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
+      alert('Failed to save settings. Please check for missing or invalid fields.');
     }
   };
 
   const tabs = [
     'Basic', 'Branding', 'Athlete', 'Event',
     'Rules', 'Financial', 'Legal', 'Sponsorship',
-    'Overview', 'Roster', 'Communication', 'Delete'
+    'Divisions', 'Overview', 'Roster', 'Communication', 'Delete'
   ];
 
   return (
@@ -266,6 +259,7 @@ function SettingsPage() {
           {activeTab === 'Financial' && <FinancialTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Legal' && <LegalTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Sponsorship' && <SponsorshipTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Divisions' && <DivisionsTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Overview' && <OverviewTab competition={competition} />}
           {activeTab === 'Roster' && <RosterTab competitionId={router.query.id as string} />}
           {activeTab === 'Communication' && <CommunicationTab competition={competition} setCompetition={setCompetition} />}
@@ -286,3 +280,4 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
+
