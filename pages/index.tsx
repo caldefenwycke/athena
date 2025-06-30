@@ -1,4 +1,5 @@
-// pages/index.tsx
+'use client';
+
 import Head from 'next/head';
 import Link from 'next/link';
 import Header from '@/components/ui/Header';
@@ -13,6 +14,8 @@ interface Competition {
   imageUrl: string;
   startDate: string;
   status: string;
+  maxAthletes?: number;
+  registrationCount?: number;
 }
 
 export default function HomePage() {
@@ -34,17 +37,25 @@ export default function HomePage() {
 
       const snapshot = await getDocs(q);
 
-      const newCompetitions: Competition[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name,
-          description: data.description,
-          imageUrl: data.imageUrl,
-          startDate: data.startDate.toDate().toISOString(),
-          status: data.status,
-        };
-      });
+      const newCompetitions: Competition[] = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
+          const data = docSnap.data();
+
+          // Get registration count
+          const regSnap = await getDocs(collection(db, 'competitions', docSnap.id, 'registrations'));
+
+          return {
+            id: docSnap.id,
+            name: data.name,
+            description: data.description,
+            imageUrl: data.imageUrl,
+            startDate: data.startDate.toDate().toISOString(),
+            status: data.status,
+            maxAthletes: data.maxAthletes,
+            registrationCount: regSnap.size,
+          };
+        })
+      );
 
       setCompetitions((prev) => [...prev, ...newCompetitions]);
       setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
@@ -144,11 +155,18 @@ export default function HomePage() {
                       {competition.description}
                     </p>
 
-                    {/* Date + Status */}
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-400">
-                        📅 {formatDateUK(competition.startDate)}
-                      </span>
+                    {/* Date */}
+                    <p className="text-sm text-gray-400 mb-1">
+                      📅 {formatDateUK(competition.startDate)}
+                    </p>
+
+                    {/* Registered / Max */}
+                    <p className="text-sm text-gray-400">
+                      Registered: {competition.registrationCount || 0} / {competition.maxAthletes || 'Unlimited'} spaces
+                    </p>
+
+                    {/* Status */}
+                    <div className="mt-2">
                       <span className="px-3 py-1 rounded text-xs font-medium bg-[#002200] text-[#00FF00]">
                         {competition.status.toUpperCase()}
                       </span>
@@ -178,5 +196,6 @@ export default function HomePage() {
     </>
   );
 }
+
 
 

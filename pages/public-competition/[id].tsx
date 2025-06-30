@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import CompetitionRegisterModal from '@/components/public/CompetitionRegisterModal';
@@ -13,6 +13,7 @@ export default function PublicCompetitionPage() {
   const [competition, setCompetition] = useState<any>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [registrationCount, setRegistrationCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
@@ -35,6 +36,10 @@ export default function PublicCompetitionPage() {
         const regRef = doc(db, 'competitions', compId, 'registrations', user.uid);
         const regSnap = await getDoc(regRef);
         setIsRegistered(regSnap.exists());
+
+        // ✅ Fetch total registration count
+        const allRegs = await getDocs(collection(db, 'competitions', compId, 'registrations'));
+        setRegistrationCount(allRegs.size);
       }
     } catch (error) {
       console.error('Error refreshing registration status:', error);
@@ -119,6 +124,9 @@ export default function PublicCompetitionPage() {
 
       <p className="mb-2"><strong>Location:</strong> {competition.location}</p>
       <p className="mb-2"><strong>Date:</strong> {formatDate(competition.startDate)} - {formatDate(competition.endDate)}</p>
+      <p className="mb-2">
+        <strong>Registered:</strong> {registrationCount} / {competition.maxAthletes || 'Unlimited'}
+      </p>
       <p className="mb-4"><strong>Description:</strong> {competition.description}</p>
 
       {user && (
@@ -156,6 +164,7 @@ export default function PublicCompetitionPage() {
     </div>
   );
 }
+
 
 
 
