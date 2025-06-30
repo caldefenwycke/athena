@@ -57,6 +57,12 @@ export default function Header() {
               Dashboard
             </Link>
             <Link
+              href="/pricing"
+              className={`transition-colors ${isActive('/pricing') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
+            >
+              Pricing
+            </Link>
+            <Link
               href="/support"
               className={`transition-colors ${isActive('/support') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
             >
