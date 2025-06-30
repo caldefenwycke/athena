@@ -113,12 +113,13 @@ export default function AthletePerformancePage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedLeaderboard = filteredLeaderboard.slice(startIndex, startIndex + itemsPerPage);
 
-  const placementLabel = (place: number) => {
-    if (place === 1) return '🥇 1st Place';
-    if (place === 2) return '🥈 2nd Place';
-    if (place === 3) return '🥉 3rd Place';
-    return `${place}th Place`;
-  };
+const placementLabel = (place: number | string) => {
+  if (place === 1) return '🥇 1st Place';
+  if (place === 2) return '🥈 2nd Place';
+  if (place === 3) return '🥉 3rd Place';
+  if (typeof place !== 'number') return place; // Fix for N/A
+  return `${place}th Place`;
+};
 
   return (
     <DashboardLayout>
@@ -145,7 +146,7 @@ export default function AthletePerformancePage() {
         {activeTab === 'personal' && personalStats && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
             <div className="bg-[#222] p-4 rounded">
-              <p className="text-sm text-gray-400">Total Competitions Entered</p>
+              <p className="text-sm text-gray-400">Total Competitions</p>
               <p className="text-xl font-bold">{personalStats.competitions}</p>
             </div>
             <div className="bg-[#222] p-4 rounded">
