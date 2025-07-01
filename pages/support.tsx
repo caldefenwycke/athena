@@ -9,7 +9,7 @@ export default function SupportPage() {
       </Head>
 
       <main className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold text-center mb-4">
+        <h1 className="text-4xl font text-center mb-4">
           <span className="text-[#00FF00]">ATH</span>ENA Support
         </h1>
         <p className="text-center text-gray-400 mb-12">

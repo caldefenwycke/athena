@@ -7,12 +7,13 @@ import {
   BasicTab,
   BrandingTab,
   AthleteTab,
-  EventTab,
+  EventsTab,
   RulesTab,
   FinancialTab,
   LegalTab,
   SponsorshipTab,
   DivisionsTab,
+  WeightsTab, // ✅ New Import
 } from '@/components/competition-settings';
 import OverviewTab from '@/components/competition-settings/OverviewTab';
 import RosterTab from '@/components/competition-settings/AthleteRosterTab';
@@ -41,6 +42,7 @@ function SettingsPage() {
     requireTshirtSize: false,
     requireWeightHeight: false,
     events: [],
+    scoringSystem: '',
     sanctioningBody: 'Unsanctioned',
     tieBreakerRule: '',
     rulesDoc: '',
@@ -95,7 +97,7 @@ function SettingsPage() {
   const addEvent = () => {
     setCompetition({
       ...competition,
-      events: [...competition.events, { name: '', scoring: 'Points', divisions: [] }],
+      events: [...competition.events, { name: '', scoring: 'Points' }],
     });
   };
 
@@ -108,24 +110,6 @@ function SettingsPage() {
   const updateEvent = (index: number, field: string, value: any) => {
     const updated = [...competition.events];
     updated[index][field] = value;
-    setCompetition({ ...competition, events: updated });
-  };
-
-  const addDivision = (eventIndex: number) => {
-    const updated = [...competition.events];
-    updated[eventIndex].divisions.push({ name: '', weights: '' });
-    setCompetition({ ...competition, events: updated });
-  };
-
-  const updateDivision = (eventIndex: number, divIndex: number, field: string, value: any) => {
-    const updated = [...competition.events];
-    updated[eventIndex].divisions[divIndex][field] = value;
-    setCompetition({ ...competition, events: updated });
-  };
-
-  const removeDivision = (eventIndex: number, divIndex: number) => {
-    const updated = [...competition.events];
-    updated[eventIndex].divisions.splice(divIndex, 1);
     setCompetition({ ...competition, events: updated });
   };
 
@@ -205,9 +189,9 @@ function SettingsPage() {
   };
 
   const tabs = [
-    'Basic', 'Branding', 'Athlete', 'Event',
+    'Basic', 'Branding', 'Athlete', 'Events',
     'Rules', 'Financial', 'Legal', 'Sponsorship',
-    'Divisions', 'Overview', 'Roster', 'Communication', 'Delete'
+    'Divisions', 'Weights', 'Overview', 'Roster', 'Communication', 'Delete' // ✅ Added "Weights"
   ];
 
   return (
@@ -243,16 +227,13 @@ function SettingsPage() {
           {activeTab === 'Basic' && <BasicTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Branding' && <BrandingTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Athlete' && <AthleteTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Event' && (
-            <EventTab
+          {activeTab === 'Events' && (
+            <EventsTab
               competition={competition}
               setCompetition={setCompetition}
               addEvent={addEvent}
               removeEvent={removeEvent}
               updateEvent={updateEvent}
-              addDivision={addDivision}
-              updateDivision={updateDivision}
-              removeDivision={removeDivision}
             />
           )}
           {activeTab === 'Rules' && <RulesTab competition={competition} setCompetition={setCompetition} />}
@@ -260,6 +241,7 @@ function SettingsPage() {
           {activeTab === 'Legal' && <LegalTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Sponsorship' && <SponsorshipTab competition={competition} setCompetition={setCompetition} />}
           {activeTab === 'Divisions' && <DivisionsTab competition={competition} setCompetition={setCompetition} />}
+          {activeTab === 'Weights' && <WeightsTab competition={competition} setCompetition={setCompetition} />} {/* ✅ New Tab Render */}
           {activeTab === 'Overview' && <OverviewTab competition={competition} />}
           {activeTab === 'Roster' && <RosterTab competitionId={router.query.id as string} />}
           {activeTab === 'Communication' && <CommunicationTab competition={competition} setCompetition={setCompetition} />}
@@ -280,4 +262,5 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
+
 

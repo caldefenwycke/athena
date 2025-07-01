@@ -5,9 +5,11 @@ import Link from 'next/link';
 export default function Pricing() {
   return (
     <div className="max-w-4xl mx-auto p-6 text-white">
-      <h1 className="text-4xl font-bold mb-6" style={{ color: '#FFFFFF' }}>Athena Organizer Pricing</h1>
+      <h1 className="text-4xl font-bold mb-6 text-center" style={{ color: '#FFFFFF' }}>
+        Athena Organizer Pricing
+      </h1>
 
-      <p className="text-lg mb-4">
+      <p className="text-lg mb-4 text-center">
         Athena makes running your competition easy, professional, and stress-free.
         You get full control over athlete registration, finances, communication, and live event management — all in one place.
       </p>
@@ -72,6 +74,4 @@ export default function Pricing() {
     </div>
   );
 }
-
-
 

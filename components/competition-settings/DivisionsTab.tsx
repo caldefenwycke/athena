@@ -2,27 +2,41 @@
 
 import { useState, useEffect } from 'react';
 
+interface Division {
+  name: string;
+  gender: string;
+  usesWeightClasses: boolean;
+  weightClasses: string;
+}
+
 interface DivisionsTabProps {
   competition: any;
   setCompetition: (data: any) => void;
 }
 
 export default function DivisionsTab({ competition, setCompetition }: DivisionsTabProps) {
-  const [localDivisions, setLocalDivisions] = useState<string[]>(competition.divisions || []);
+  const [localDivisions, setLocalDivisions] = useState<Division[]>(competition.divisions || []);
 
   useEffect(() => {
     setLocalDivisions(competition.divisions || []);
   }, [competition.divisions]);
 
   const handleAddDivision = () => {
-    const updated = [...localDivisions, ''];
+    const updated = [
+      ...localDivisions,
+      { name: '', gender: 'Male', usesWeightClasses: false, weightClasses: '' },
+    ];
     setLocalDivisions(updated);
     setCompetition({ ...competition, divisions: updated });
   };
 
-  const handleUpdateDivision = (index: number, value: string) => {
+  const handleUpdateDivision = (
+    index: number,
+    field: keyof Division,
+    value: string | boolean
+  ) => {
     const updated = [...localDivisions];
-    updated[index] = value;
+    updated[index] = { ...updated[index], [field]: value };
     setLocalDivisions(updated);
     setCompetition({ ...competition, divisions: updated });
   };
@@ -39,12 +53,13 @@ export default function DivisionsTab({ competition, setCompetition }: DivisionsT
       <h3 className="text-2xl font-bold mb-6 text-white">Competition Divisions</h3>
 
       {localDivisions.map((division, index) => (
-        <div key={index} className="mb-3">
-          <div className="flex items-center gap-2">
+        <div key={index} className="mb-4 border-b border-gray-700 pb-4">
+          {/* Division Name */}
+          <div className="flex items-center gap-2 mb-2">
             <input
               type="text"
-              value={division}
-              onChange={(e) => handleUpdateDivision(index, e.target.value)}
+              value={division.name}
+              onChange={(e) => handleUpdateDivision(index, 'name', e.target.value)}
               placeholder={`Division ${index + 1} Name`}
               className="w-full bg-black text-white border border-gray-600 rounded px-2 py-1 text-sm"
             />
@@ -55,6 +70,52 @@ export default function DivisionsTab({ competition, setCompetition }: DivisionsT
               −
             </button>
           </div>
+
+          {/* Gender and Uses Weight Classes on same row */}
+          <div className="flex items-center gap-4 mb-2">
+            {/* Gender */}
+            <div className="flex items-center gap-2">
+              <label className="w-16">Gender:</label>
+              <select
+                value={division.gender}
+                onChange={(e) => handleUpdateDivision(index, 'gender', e.target.value)}
+                className="bg-black text-white border border-gray-600 rounded px-2 py-1 text-sm"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Mixed">Mixed</option>
+              </select>
+            </div>
+
+            {/* Uses Weight Classes */}
+            <div className="flex items-center gap-2">
+              <label className="w-32">Uses Weight Classes:</label>
+              <select
+                value={division.usesWeightClasses ? 'Yes' : 'No'}
+                onChange={(e) =>
+                  handleUpdateDivision(index, 'usesWeightClasses', e.target.value === 'Yes')
+                }
+                className="bg-black text-white border border-gray-600 rounded px-2 py-1 text-sm"
+              >
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Weight Classes Input - Conditional */}
+          {division.usesWeightClasses && (
+            <div>
+              <label className="block mb-1">Weight Classes (comma separated):</label>
+              <input
+                type="text"
+                value={division.weightClasses}
+                onChange={(e) => handleUpdateDivision(index, 'weightClasses', e.target.value)}
+                placeholder="e.g., U80, U90, Open"
+                className="w-full bg-black text-white border border-gray-600 rounded px-2 py-1 text-sm"
+              />
+            </div>
+          )}
         </div>
       ))}
 
@@ -67,6 +128,9 @@ export default function DivisionsTab({ competition, setCompetition }: DivisionsT
     </div>
   );
 }
+
+
+
 
 
 

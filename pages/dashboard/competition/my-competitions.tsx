@@ -13,7 +13,7 @@ interface Competition {
   name?: string;
   description?: string;
   location?: string;
-  startDate?: Timestamp;
+  startDate?: Timestamp | string;
   maxAthletes?: number;
   status: 'active' | 'past';
   registrationCount?: number;
@@ -59,8 +59,14 @@ export default function MyCompetitionsPage() {
     if (sortOrder === 'alphabetical') {
       return (a.name || '').localeCompare(b.name || '');
     } else if (sortOrder === 'date') {
-      const aDate = a.startDate ? a.startDate.toDate().getTime() : 0;
-      const bDate = b.startDate ? b.startDate.toDate().getTime() : 0;
+      const aDate =
+        a.startDate && typeof (a.startDate as Timestamp).toDate === 'function'
+          ? (a.startDate as Timestamp).toDate().getTime()
+          : 0;
+      const bDate =
+        b.startDate && typeof (b.startDate as Timestamp).toDate === 'function'
+          ? (b.startDate as Timestamp).toDate().getTime()
+          : 0;
       return aDate - bDate;
     } else if (sortOrder === 'registered') {
       return (b.registrationCount || 0) - (a.registrationCount || 0);
@@ -133,7 +139,11 @@ export default function MyCompetitionsPage() {
             <p className="text-gray-400">No competitions to display.</p>
           ) : (
             visibleComps.map((comp) => {
-              const startDate = comp.startDate ? comp.startDate.toDate() : null;
+              const startDate =
+                comp.startDate && typeof (comp.startDate as Timestamp).toDate === 'function'
+                  ? (comp.startDate as Timestamp).toDate()
+                  : null;
+
               const isUpcoming =
                 startDate &&
                 new Date().getTime() < startDate.getTime() &&
@@ -155,7 +165,9 @@ export default function MyCompetitionsPage() {
                       <p className="text-sm text-gray-400">
                         📅{' '}
                         {comp.startDate
-                          ? comp.startDate.toDate().toLocaleDateString()
+                          ? typeof (comp.startDate as Timestamp).toDate === 'function'
+                            ? (comp.startDate as Timestamp).toDate().toLocaleDateString()
+                            : comp.startDate.toString()
                           : 'No Date Set'}
                       </p>
                       <p className="text-sm text-gray-400">
@@ -163,7 +175,6 @@ export default function MyCompetitionsPage() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      {/* ✅ New View Button */}
                       <Link href={`/public-competition/${comp.id}`}>
                         <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
                           View
@@ -202,4 +213,5 @@ export default function MyCompetitionsPage() {
     </DashboardLayout>
   );
 }
+
 
