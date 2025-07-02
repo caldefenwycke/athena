@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/router';
-import ShowtimeSidebar from '../showtime/ShowtimeSidebar';
+import ShowtimeSidebar from '../show-time/ShowtimeSidebar';
 
 interface ShowtimeLayoutProps {
   children: React.ReactNode;

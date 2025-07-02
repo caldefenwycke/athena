@@ -1,7 +1,7 @@
 'use client';
 
 import ShowtimeLayout from '@/components/layouts/ShowtimeLayout';
-import ShowTimeOverview from '@/components/showtime/ShowTimeOverview';
+import ShowTimeOverview from '@/components/show-time/ShowTimeOverview';
 
 export default function ShowTimePage() {
   return (
