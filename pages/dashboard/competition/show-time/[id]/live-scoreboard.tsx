@@ -1,69 +1,82 @@
 'use client';
 
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import Leaderboard from '@/components/leaderboard/Leaderboard';
+import { useRouter } from 'next/router';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-
-interface CompetitionData {
-  id: string;
-  scoringSystem: string;
-  customPoints?: number[];
-  events: { name: string }[];
-  divisions?: string[];
-}
+import Leaderboard from '@/components/leaderboard/Leaderboard';
+import { db } from '@/lib/firebase';
 
 export default function LiveScoreboard() {
   const router = useRouter();
   const { id } = router.query;
-  const [competition, setCompetition] = useState<CompetitionData | null>(null);
+  const [competition, setCompetition] = useState<any | null>(null);
+  const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCompetition = async () => {
+    const fetchData = async () => {
       if (!id) return;
+      setLoading(true);
 
       try {
         const docRef = doc(db, 'competitions', id as string);
         const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setCompetition({
-            id: id as string,
-            scoringSystem: data.scoringSystem || 'AthleteCount',
-            customPoints: data.customPoints || [],
-            events: data.events || [],
-            divisions: data.divisions || [],
-          });
-        } else {
+        if (!docSnap.exists()) {
           console.error('Competition not found');
+          setCompetition(null);
+          setLoading(false);
+          return;
         }
+
+        const compData = docSnap.data();
+
+        // Fetch Events
+        const eventsSnap = await getDocs(collection(docRef, 'events'));
+        const events = eventsSnap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+
+        // Fetch Registrations
+        const regsSnap = await getDocs(collection(docRef, 'registrations'));
+        const regs = regsSnap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+
+        setCompetition({
+          id: docSnap.id,
+          ...compData,
+          events,
+        });
+        setRegistrations(regs);
       } catch (error) {
-        console.error('Error fetching competition:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (router.isReady) {
-      fetchCompetition();
-    }
+    if (router.isReady) fetchData();
   }, [id, router.isReady]);
 
   if (loading) return <p className="text-white p-6">Loading Live Scoreboard...</p>;
-
   if (!competition) return <p className="text-red-400 p-6">Competition not found.</p>;
 
   return (
     <DashboardLayout>
       <div className="p-6 text-white">
         <h2 className="text-2xl font-bold mb-4">Live Scoreboard</h2>
-        <Leaderboard competition={competition} />
+        <Leaderboard competition={competition} registrations={registrations} />
       </div>
     </DashboardLayout>
   );
 }
+
+
+
+
+
 

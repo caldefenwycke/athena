@@ -189,10 +189,10 @@ function SettingsPage() {
   };
 
   const tabs = [
-    'Basic', 'Branding', 'Athlete', 'Events',
-    'Rules', 'Financial', 'Legal', 'Sponsorship',
-    'Divisions', 'Weights', 'Overview', 'Roster', 'Communication', 'Delete' // ✅ Added "Weights"
-  ];
+  'Overview', 'Basic', 'Branding', 'Athlete', 'Roster',
+  'Divisions', 'Events', 'Weights', 'Rules', 'Communication',
+  'Legal', 'Financial', 'Sponsorship', 'Delete'
+];
 
   return (
     <DashboardLayout>
