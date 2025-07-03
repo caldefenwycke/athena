@@ -180,9 +180,9 @@ export default function MyCompetitionsPage() {
                           View
                         </button>
                       </Link>
-                      <Link href={`/dashboard/competition/${comp.id}/settings`}>
-                        <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
-                          Edit
+                      <Link href={`/portal/${comp.id}/public`}>
+                       <button className="bg-[#00FF00] text-black text-sm font-semibold px-3 py-1 rounded hover:bg-[#00e600]">
+                        Enter Portal
                         </button>
                       </Link>
                       <Link href={`/dashboard/competition/show-time/${comp.id}`}>

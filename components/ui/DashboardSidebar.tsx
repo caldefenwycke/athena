@@ -38,8 +38,7 @@ export default function DashboardSidebar() {
       icon: <Trophy className="w-5 h-5 mr-2" />,
       items: [
         { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
-        { id: 'show-time', label: 'Show Time', path: '/dashboard/competition/show-time' },
-      ],
+       ],
     },
     // ✅ Only include Admin section if user role is admin
     ...(user?.role === 'admin'
@@ -106,4 +105,5 @@ export default function DashboardSidebar() {
     </div>
   );
 }
+
 

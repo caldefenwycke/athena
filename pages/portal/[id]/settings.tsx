@@ -1,23 +1,23 @@
 'use client';
 
-import { ReactElement, useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import DashboardLayout from '@/components/layouts/DashboardLayout';
+import CompetitionPortalLayout from '@/components/layouts/CompetitionPortalLayout';
 import {
+  OverviewTab,
   BasicTab,
-  BrandingTab,
-  AthleteTab,
-  EventsTab,
-  RulesTab,
-  FinancialTab,
-  LegalTab,
-  SponsorshipTab,
   DivisionsTab,
-  WeightsTab, // ✅ New Import
+  EventsTab,
+  WeightsTab,
+  AthleteTab,
+  RosterTab,
+  CommunicationTab,
+  RulesTab,
+  LegalTab,
+  FinancialTab,
+  BrandingTab,
+  SponsorshipTab,
 } from '@/components/competition-settings';
-import OverviewTab from '@/components/competition-settings/OverviewTab';
-import RosterTab from '@/components/competition-settings/AthleteRosterTab';
-import CommunicationTab from '@/components/competition-settings/CommunicationTab';
 import DeleteTab from '@/components/competition-settings/DeleteTab';
 import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -28,7 +28,19 @@ import { logSystemEvent } from '@/lib/logSystemEvent';
 function SettingsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('Basic');
+
+  const [hashTab, setHashTab] = useState('Overview');
+
+  useEffect(() => {
+    const updateTab = () => {
+      const rawHash = window.location.hash.replace('#', '');
+      setHashTab(rawHash || 'Overview');
+    };
+
+    updateTab(); // Set initial on load
+    window.addEventListener('hashchange', updateTab);
+    return () => window.removeEventListener('hashchange', updateTab);
+  }, []);
 
   const [competition, setCompetition] = useState<any>({
     name: '',
@@ -188,14 +200,8 @@ function SettingsPage() {
     }
   };
 
-  const tabs = [
-  'Overview', 'Basic', 'Branding', 'Athlete', 'Roster',
-  'Divisions', 'Events', 'Weights', 'Rules', 'Communication',
-  'Legal', 'Financial', 'Sponsorship', 'Delete'
-];
-
   return (
-    <DashboardLayout>
+    <CompetitionPortalLayout>
       <div className="p-6 text-white max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Competition Settings</h2>
@@ -207,27 +213,11 @@ function SettingsPage() {
           </button>
         </div>
 
-        <div className="mb-6 flex flex-wrap gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded font-semibold transition-all duration-150 shadow-md ${
-                activeTab === tab
-                  ? 'bg-[#00FF00] text-black'
-                  : 'bg-[#222] text-white hover:bg-[#333]'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
         <div className="bg-[#111] p-6 rounded-lg shadow-lg border border-[#1a1a1a]">
-          {activeTab === 'Basic' && <BasicTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Branding' && <BrandingTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Athlete' && <AthleteTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Events' && (
+          {hashTab === 'Overview' && <OverviewTab competition={competition} />}
+          {hashTab === 'Basic' && <BasicTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Divisions' && <DivisionsTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Events' && (
             <EventsTab
               competition={competition}
               setCompetition={setCompetition}
@@ -236,16 +226,16 @@ function SettingsPage() {
               updateEvent={updateEvent}
             />
           )}
-          {activeTab === 'Rules' && <RulesTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Financial' && <FinancialTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Legal' && <LegalTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Sponsorship' && <SponsorshipTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Divisions' && <DivisionsTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Weights' && <WeightsTab competition={competition} setCompetition={setCompetition} />} {/* ✅ New Tab Render */}
-          {activeTab === 'Overview' && <OverviewTab competition={competition} />}
-          {activeTab === 'Roster' && <RosterTab competitionId={router.query.id as string} />}
-          {activeTab === 'Communication' && <CommunicationTab competition={competition} setCompetition={setCompetition} />}
-          {activeTab === 'Delete' && <DeleteTab competition={competition} />}
+          {hashTab === 'Weights' && <WeightsTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Athlete' && <AthleteTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Roster' && <RosterTab competitionId={router.query.id as string} />}
+          {hashTab === 'Communication' && <CommunicationTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Rules' && <RulesTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Legal' && <LegalTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Financial' && <FinancialTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Branding' && <BrandingTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Sponsorship' && <SponsorshipTab competition={competition} setCompetition={setCompetition} />}
+          {hashTab === 'Delete' && <DeleteTab competition={competition} />}
         </div>
 
         <div className="flex justify-end mt-6">
@@ -257,7 +247,7 @@ function SettingsPage() {
           </button>
         </div>
       </div>
-    </DashboardLayout>
+    </CompetitionPortalLayout>
   );
 }
 
