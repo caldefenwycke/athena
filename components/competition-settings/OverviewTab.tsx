@@ -1,8 +1,20 @@
+'use client';
+
 import React from 'react';
 
 interface OverviewTabProps {
   competition: any;
 }
+
+const formatDate = (value: any) => {
+  if (value?.toDate) {
+    return value.toDate().toLocaleDateString();
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  return '—';
+};
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ competition }) => {
   return (
@@ -13,8 +25,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ competition }) => {
         <h3 className="text-xl font-semibold mb-2">Basic Information</h3>
         <p><strong>Name:</strong> {competition.name}</p>
         <p><strong>Location:</strong> {competition.location}</p>
-        <p><strong>Start Date:</strong> {competition.startDate}</p>
-        <p><strong>End Date:</strong> {competition.endDate}</p>
+        <p><strong>Start Date:</strong> {formatDate(competition.startDate)}</p>
+        <p><strong>End Date:</strong> {formatDate(competition.endDate)}</p>
       </section>
 
       {competition.image && (
@@ -26,7 +38,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ competition }) => {
 
       <section>
         <h3 className="text-xl font-semibold mb-2">Athlete Requirements</h3>
-        <p><strong>Registration Close:</strong> {competition.registrationCloseDate}</p>
+        <p><strong>Registration Close:</strong> {formatDate(competition.registrationCloseDate)}</p>
         <p><strong>Max Athletes:</strong> {competition.maxAthletes}</p>
         <p><strong>Require T-Shirt Size:</strong> {competition.requireTshirtSize ? 'Yes' : 'No'}</p>
         <p><strong>Require Weight/Height:</strong> {competition.requireWeightHeight ? 'Yes' : 'No'}</p>
