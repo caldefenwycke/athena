@@ -1,13 +1,13 @@
 'use client';
 
-import ShowtimeLayout from '@/components/layouts/ShowTimeLayout';
+import ShowTimeLayout from '@/components/layouts/ShowTimeLayout';
 import ShowTimeOverview from '@/components/show-time/ShowTimeOverview';
 
 export default function ShowTimePage() {
   return (
-    <ShowtimeLayout>
+    <ShowTimeLayout>
       <h1 className="text-3xl font-bold mb-6">Herm Strongest Show Time</h1>
       <ShowTimeOverview />
-    </ShowtimeLayout>
+    </ShowTimeLayout>
   );
 }

@@ -6,10 +6,10 @@ import { db } from '@/lib/firebase';
 
 interface LeaderboardProps {
   competition: any;
-  registrations: any[];
+  registrations?: any[]; // ← ✅ now optional
 }
 
-export default function Leaderboard({ competition, registrations }: LeaderboardProps) {
+export default function Leaderboard({ competition, registrations = [] }: LeaderboardProps) {
   const [athleteNames, setAthleteNames] = useState<{ [key: string]: string }>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('All');
@@ -144,6 +144,7 @@ export default function Leaderboard({ competition, registrations }: LeaderboardP
     </div>
   );
 }
+
 
 
 

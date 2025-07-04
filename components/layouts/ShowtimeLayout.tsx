@@ -1,15 +1,15 @@
-// components/layouts/ShowtimeLayout.tsx
+// components/layouts/ShowTimeLayout.tsx
 'use client';
 
 import React from 'react';
 import { useRouter } from 'next/router';
 import ShowtimeSidebar from '../show-time/ShowTimeSidebar';
 
-interface ShowtimeLayoutProps {
+interface ShowTimeLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ShowtimeLayout({ children }: ShowtimeLayoutProps) {
+export default function ShowTimeLayout({ children }: ShowTimeLayoutProps) {
   const router = useRouter();
   let competitionId: string | null = null;
 
