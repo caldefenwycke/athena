@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { User, Trophy, Shield } from 'lucide-react';
+import { User, Trophy, Shield, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 interface MenuItem {
@@ -30,6 +30,7 @@ export default function DashboardSidebar() {
         { id: 'bio', label: 'Bio', path: '/dashboard/athlete/bio' },
         { id: 'athlete-competitions', label: 'Athlete Competitions', path: '/dashboard/athlete/athlete-competitions' },
         { id: 'athlete-performance', label: 'Athlete Performance', path: '/dashboard/athlete/athlete-performance' },
+        { id: 'messages', label: 'Messages', path: '/dashboard/athlete/messages' }, // ✅ New
       ],
     },
     {
@@ -38,9 +39,8 @@ export default function DashboardSidebar() {
       icon: <Trophy className="w-5 h-5 mr-2" />,
       items: [
         { id: 'my-competitions', label: 'My Competitions', path: '/dashboard/competition/my-competitions' },
-       ],
+      ],
     },
-    // ✅ Only include Admin section if user role is admin
     ...(user?.role === 'admin'
       ? [
           {
@@ -105,5 +105,6 @@ export default function DashboardSidebar() {
     </div>
   );
 }
+
 
 

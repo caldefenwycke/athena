@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/router'; // ✅ For pages/ directory
+import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import AuthModal from '@/components/ui/AuthModal';
@@ -9,7 +9,7 @@ import AuthModal from '@/components/ui/AuthModal';
 export default function Header() {
   const { user, logout, loading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const { pathname } = useRouter(); // ✅ Correct hook for pages directory
+  const { pathname } = useRouter();
 
   if (loading) return null;
 
@@ -57,6 +57,12 @@ export default function Header() {
               Dashboard
             </Link>
             <Link
+              href="/sponsorship"
+              className={`transition-colors ${isActive('/sponsorship') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
+            >
+              Sponsorship
+            </Link>
+            <Link
               href="/pricing"
               className={`transition-colors ${isActive('/pricing') ? 'text-[#00FF00]' : 'hover:text-[#00FF00]'}`}
             >
@@ -96,3 +102,4 @@ export default function Header() {
     </>
   );
 }
+
