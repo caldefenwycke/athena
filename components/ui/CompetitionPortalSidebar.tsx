@@ -25,14 +25,22 @@ import { useEffect, useState } from 'react';
 
 const sections = [
   { title: 'Public Page', icon: Globe, pathSuffix: 'public' },
-  { title: 'Public Scores', icon: ListOrdered, pathSuffix: 'scores' },
+  {
+    title: 'Public Scores',
+    icon: ListOrdered,
+    customHref: (id: string) => `/public-competition/leaderboard/${id}`,
+  },
   { title: 'Settings', icon: Cog, pathSuffix: 'settings' },
   { title: 'Messages', icon: MessageCircle, pathSuffix: 'communication' },
   { title: 'Sponsorship', icon: Handshake, pathSuffix: 'sponsorship' },
   { title: 'Financial', icon: CreditCard, pathSuffix: 'financial' },
   { title: 'Downloads', icon: Download, pathSuffix: 'downloads' },
   { title: 'Merchandise', icon: ShoppingBag, pathSuffix: 'merchandise' },
-  { title: 'Show Time', icon: Tv2, pathSuffix: 'showtime' },
+  {
+    title: 'Show Time',
+    icon: Tv2,
+    customHref: (id: string) => `/dashboard/competition/show-time/${id}`,
+  },
 ];
 
 const settingsChildren = [
@@ -90,7 +98,9 @@ export default function CompetitionPortalSidebar({ competitionId }: Props) {
   return (
     <div className="flex flex-col gap-4">
       {sections.map((section) => {
-        const href = `/portal/${competitionId}/${section.pathSuffix}`;
+        const href = section.customHref
+          ? section.customHref(competitionId)
+          : `/portal/${competitionId}/${section.pathSuffix}`;
         const isActive = currentPath.split('?')[0] === href;
 
         return (
@@ -135,6 +145,8 @@ export default function CompetitionPortalSidebar({ competitionId }: Props) {
     </div>
   );
 }
+
+
 
 
 
