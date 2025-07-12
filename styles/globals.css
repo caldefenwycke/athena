@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Always reserve scrollbar space to prevent layout shift */
+html {
+  overflow-y: scroll;
+}
+
+body {
+  @apply bg-black text-white;
+}

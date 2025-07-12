@@ -1,0 +1,1 @@
+// CompetitionCard.tsx placeholder
