@@ -1,0 +1,41 @@
+/* Override Toastify default styles with Athena theme */
+.Toastify__toast {
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: #111; /* Dark background */
+  color: white;
+  box-shadow: 0 0 10px #00ff7f44; /* Neon green glow */
+  border: 1px solid #00ff7f;
+}
+
+.Toastify__toast--success {
+  border-left: 6px solid #00ff7f;
+  background-color: #121212;
+  color: #00ff7f;
+}
+
+.Toastify__toast--error {
+  border-left: 6px solid #ff4f4f;
+  background-color: #121212;
+  color: #ff4f4f;
+}
+
+.Toastify__toast--info {
+  border-left: 6px solid #1e90ff;
+  background-color: #121212;
+  color: #1e90ff;
+}
+
+.Toastify__close-button {
+  color: white;
+  opacity: 0.8;
+}
+
+.Toastify__progress-bar {
+  background: #00ff7f;
+}
+
+.Toastify__toast-body {
+  font-size: 0.875rem;
+}
