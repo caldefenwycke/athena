@@ -1,11 +1,19 @@
-// /context/AuthContext.tsx
 'use client';
 
-import { createContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
+import {
+  onAuthStateChanged,
+  signOut,
+  User as FirebaseUser,
+} from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { doc, getDoc } from 'firebase/firestore';
-
 import { auth, db } from '@/lib/firebase';
 
 interface ExtendedUser extends FirebaseUser {
@@ -22,7 +30,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null);
@@ -35,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (firebaseUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-
           const userData = userDoc.exists() ? userDoc.data() : {};
 
           const extendedUser: ExtendedUser = {
@@ -47,9 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
 
           setUser(extendedUser);
-          setRole(userData.role || 'athlete');
-        } catch (err) {
-          console.error('Error fetching user doc:', err);
+          setRole(extendedUser.role);
+        } catch (error) {
+          console.error('Failed to fetch user document:', error);
         }
       } else {
         setUser(null);
@@ -75,3 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
+// ✅ Hook for components to consume the context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
