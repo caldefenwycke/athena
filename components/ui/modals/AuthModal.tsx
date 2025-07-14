@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent, ChangeEvent } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -19,29 +19,26 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [isRegister, setIsRegister] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const router = useRouter();
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setMessage('');
 
     try {
-      await setPersistence(
-        auth,
-        rememberMe ? browserLocalPersistence : browserSessionPersistence
-      );
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
 
       if (isRegister) {
         const res = await createUserWithEmailAndPassword(auth, email, password);
@@ -57,8 +54,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       onClose();
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const typedError = err as { message: string };
+      setError(typedError.message || 'Authentication failed');
     }
   };
 
@@ -69,8 +67,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     try {
       await sendPasswordResetEmail(auth, email);
       setMessage('Password reset link sent!');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const typedError = err as { message: string };
+      setError(typedError.message || 'Could not send reset email');
     }
   };
 
@@ -84,7 +83,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           ✕
         </button>
         <div className="text-4xl font-bold mb-2">
-          <span className="text-[#00FF00]">ATH</span><span className="text-white">ENA</span>
+          <span className="text-[#00FF00]">ATH</span>
+          <span className="text-white">ENA</span>
         </div>
         <p className="text-white text-lg mb-6">
           {isRegister ? 'Create your account' : 'Welcome back'}
@@ -98,7 +98,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 placeholder="First Name"
                 className="w-full p-2 bg-black border border-[#333] text-white rounded"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
                 required
               />
               <input
@@ -106,7 +106,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 placeholder="Last Name"
                 className="w-full p-2 bg-black border border-[#333] text-white rounded"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
                 required
               />
             </>
@@ -116,7 +116,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             placeholder="Email"
             className="w-full p-2 bg-black border border-[#333] text-white rounded"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             required
           />
 
@@ -126,7 +126,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               placeholder="Password"
               className="w-full p-2 bg-black border border-[#333] text-white rounded pr-10"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               required
             />
             <button

@@ -1,3 +1,4 @@
+// components/ui/sidebars/DashboardSidebar.tsx
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -11,11 +12,24 @@ import {
   ScrollText,
 } from 'lucide-react';
 
+interface SidebarChild {
+  label: string;
+  path: string;
+  icon: React.ElementType;
+}
+
+interface SidebarSection {
+  title: string;
+  path: string;
+  icon: React.ElementType;
+  children?: SidebarChild[];
+}
+
 export default function DashboardSidebar() {
   const router = useRouter();
   const pathname = router.pathname;
 
-  const sidebarStructure = [
+  const sidebarStructure: SidebarSection[] = [
     {
       title: 'Athlete',
       path: '/dashboard/athlete/profile',
@@ -48,17 +62,11 @@ export default function DashboardSidebar() {
     },
   ];
 
-  const isActivePath = (targetPath: string) => {
-    return pathname === targetPath;
-  };
+  const isActivePath = (targetPath: string) => pathname === targetPath;
 
-  const isParentActive = (section: any) => {
-    if (isActivePath(section.path)) return true;
-    if (section.children) {
-      return section.children.some((c: any) => isActivePath(c.path));
-    }
-    return false;
-  };
+  const isParentActive = (section: SidebarSection) =>
+    isActivePath(section.path) ||
+    (section.children?.some((child) => isActivePath(child.path)) ?? false);
 
   return (
     <div className="space-y-6">

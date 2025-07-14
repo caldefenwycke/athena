@@ -1,3 +1,4 @@
+// pages/index.tsx
 'use client';
 
 import Head from 'next/head';
@@ -10,6 +11,8 @@ import {
   limit,
   startAfter,
   getDocs,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import PublicLayout from '@/components/layout/PublicLayout';
@@ -27,7 +30,7 @@ interface Competition {
 
 export default function HomePage() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [lastDoc, setLastDoc] = useState<any>(null);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -77,7 +80,7 @@ export default function HomePage() {
         return [...prev, ...uniqueComps];
       });
 
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
       if (snapshot.docs.length < 6) setHasMore(false);
     } catch (err) {
       console.error('Error loading competitions:', err);
@@ -110,14 +113,12 @@ export default function HomePage() {
       </Head>
 
       <main className="max-w-7xl mx-auto px-4 py-12 text-white">
-        {/* Hero / Search */}
+        {/* Hero Section */}
         <div className="text-center mb-20 py-12 bg-black rounded-lg">
           <h1 className="text-8xl font mb-4 leading-tight">
             <span className="text-[#00FF00]">ATH</span>ENA
           </h1>
-          <p className="text-lg text-gray-400 mb-2 tracking-wider">
-            ATHLETE ARENA
-          </p>
+          <p className="text-lg text-gray-400 mb-2 tracking-wider">ATHLETE ARENA</p>
           <p className="text-md mb-8 tracking-wide">
             STRONGMAN COMPETITION ADMINISTRATION SYSTEM
           </p>
@@ -175,21 +176,15 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Scroll State Messages */}
+        {/* Scroll Feedback */}
         {loading && hasMore && (
-          <p className="text-center text-gray-400 mt-6">
-            Loading more competitions...
-          </p>
+          <p className="text-center text-gray-400 mt-6">Loading more competitions...</p>
         )}
         {!hasMore && competitions.length > 0 && (
-          <p className="text-center text-gray-500 mt-6">
-            No more competitions to load
-          </p>
+          <p className="text-center text-gray-500 mt-6">No more competitions to load</p>
         )}
         {!loading && competitions.length === 0 && (
-          <p className="text-center text-gray-500 mt-6">
-            No competitions found
-          </p>
+          <p className="text-center text-gray-500 mt-6">No competitions found</p>
         )}
       </main>
     </PublicLayout>
